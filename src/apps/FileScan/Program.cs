@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using Spectre.Console;
 
@@ -11,13 +12,23 @@ internal static class Program
         if (args.Length != 1)
         {
             PrintHelp();
+            return;
         }
 
         var arg = args.First();
         if (arg is "-h" or "--help")
         {
             PrintHelp();
+            return;
         }
+
+        if (!Directory.Exists(arg))
+        {
+            AnsiConsole.MarkupLine($"Directory [blue]{arg}[/] was [red]not[/] found.");
+            return;
+        }
+
+        new DirectoryScanner(arg).Scan();
     }
 
     private static void PrintHelp()
