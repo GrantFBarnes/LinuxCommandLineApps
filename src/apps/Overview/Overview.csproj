@@ -11,4 +11,8 @@
     <SelfContained>true</SelfContained>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\common\Linux\Linux.csproj" />
+  </ItemGroup>
+
 </Project>

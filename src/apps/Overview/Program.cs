@@ -55,7 +55,7 @@ static string GetOS()
 
 static string GetKernel()
 {
-    throw new NotImplementedException();
+    return new Command("uname -r").GetOutput().Trim();
 }
 
 static string GetCPU()
