@@ -1,6 +1,5 @@
 ﻿// Overview
 
-using System.Security.Cryptography;
 using System.Text;
 
 Console.WriteLine($"    User: {GetUser()}");
@@ -189,13 +188,13 @@ static string GetPackages()
     var flatpakCommand = new Command("flatpak list");
     if (flatpakCommand.Exists())
     {
-        result.Add($"{flatpakCommand.GetOutput().Split("\n").Length} (flatpak)");
+        result.Add($"{flatpakCommand.GetOutput().Split("\n").Length - 1} (flatpak)");
     }
 
     var snapCommand = new Command("snap list");
     if (snapCommand.Exists())
     {
-        result.Add($"{snapCommand.GetOutput().Split("\n").Length} (snap)");
+        result.Add($"{snapCommand.GetOutput().Split("\n").Length - 1} (snap)");
     }
 
     return string.Join(", ", result);
