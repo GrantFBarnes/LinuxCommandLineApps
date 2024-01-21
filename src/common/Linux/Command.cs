@@ -4,7 +4,8 @@ public sealed class Command
 {
     private readonly string _fileName;
     private readonly string _arguments;
-    private bool _showOutput;
+    private string _workingDirectory;
+    private bool _hideOutput;
     private bool _waitForExit;
 
     public Command(string text)
@@ -18,13 +19,21 @@ public sealed class Command
         var textSplit = text.Split(" ");
         _fileName = textSplit.First();
         _arguments = string.Join(" ", textSplit.Skip(1));
-        _showOutput = false;
+
+        _workingDirectory = string.Empty;
+        _hideOutput = false;
         _waitForExit = true;
     }
 
-    public Command ShowOutput(bool show)
+    public Command WorkingDirectory(string directory)
     {
-        _showOutput = show;
+        _workingDirectory = directory;
+        return this;
+    }
+
+    public Command HideOutput(bool hide)
+    {
+        _hideOutput = hide;
         return this;
     }
 
@@ -36,14 +45,25 @@ public sealed class Command
 
     public void Run()
     {
+        var startInfo = new ProcessStartInfo()
+        {
+            FileName = _fileName,
+            Arguments = _arguments,
+        };
+
+        if (!string.IsNullOrEmpty(_workingDirectory))
+        {
+            startInfo.WorkingDirectory = _workingDirectory;
+        }
+
+        if (_hideOutput)
+        {
+            startInfo.RedirectStandardOutput = true;
+        }
+
         var process = new Process()
         {
-            StartInfo = new ProcessStartInfo()
-            {
-                FileName = _fileName,
-                Arguments = _arguments,
-                RedirectStandardOutput = !_showOutput,
-            }
+            StartInfo = startInfo
         };
 
         process.Start();
@@ -56,14 +76,21 @@ public sealed class Command
 
     public string GetOutput()
     {
+        var startInfo = new ProcessStartInfo()
+        {
+            FileName = _fileName,
+            Arguments = _arguments,
+            RedirectStandardOutput = true,
+        };
+
+        if (!string.IsNullOrEmpty(_workingDirectory))
+        {
+            startInfo.WorkingDirectory = _workingDirectory;
+        }
+
         var process = new Process()
         {
-            StartInfo = new ProcessStartInfo()
-            {
-                FileName = _fileName,
-                Arguments = _arguments,
-                RedirectStandardOutput = true,
-            }
+            StartInfo = startInfo
         };
 
         process.Start();
