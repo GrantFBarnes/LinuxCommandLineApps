@@ -181,5 +181,6 @@ static string GetUptime()
 
 static string GetPackages()
 {
-    throw new NotImplementedException();
+    var distribution = new Distribution();
+    return $"{distribution.GetPackageCount()} ({distribution.GetPackageType()})";
 }

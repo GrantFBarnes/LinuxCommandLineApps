@@ -53,4 +53,20 @@ public sealed class Distribution
                 throw new Exception("distribution not found");
         }
     }
+
+    public int GetPackageCount() => _packageManager switch
+    {
+        PackageManager.APT => new Command("dpkg --list").GetOutput().Split("\n").Length,
+        PackageManager.DNF => new Command("rpm -qa").GetOutput().Split("\n").Length,
+        PackageManager.PACMAN => new Command("pacman -Q").GetOutput().Split("\n").Length,
+        _ => throw new NotImplementedException(),
+    };
+
+    public string GetPackageType() => _packageManager switch
+    {
+        PackageManager.APT => "dpkg",
+        PackageManager.DNF => "rpm",
+        PackageManager.PACMAN => "pacman",
+        _ => throw new NotImplementedException(),
+    };
 }
