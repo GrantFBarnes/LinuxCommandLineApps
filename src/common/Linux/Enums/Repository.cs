@@ -1,3 +1,5 @@
+namespace Linux.Enums;
+
 public enum Repository
 {
     Arch,

@@ -1,18 +1,25 @@
 ﻿// Overview
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
+using Linux;
+
+const string unknown = "(Unknown)";
 
 Console.WriteLine($"    User: {GetUser()}");
 Console.WriteLine($"Hostname: {GetHostname()}");
-Console.WriteLine($"      OS: {GetOS()}");
+Console.WriteLine($"      OS: {GetOs()}");
 Console.WriteLine($"  Kernel: {GetKernel()}");
-Console.WriteLine($"     CPU: {GetCPU()}");
+Console.WriteLine($"     CPU: {GetCpu()}");
 Console.WriteLine($"   Speed: {GetSpeed()}");
 Console.WriteLine($"  Memory: {GetMemory()}");
 Console.WriteLine($"  Uptime: {GetUptime()}");
 Console.WriteLine($"Packages: {GetPackages()}");
 
-const string unknown = "(Unknown)";
+return;
 
 static string GetUser()
 {
@@ -22,14 +29,10 @@ static string GetUser()
 static string GetHostname()
 {
     var hostname = File.ReadAllText("/etc/hostname").Trim();
-    if (string.IsNullOrEmpty(hostname))
-    {
-        return unknown;
-    }
-    return hostname;
+    return string.IsNullOrEmpty(hostname) ? unknown : hostname;
 }
 
-static string GetOS()
+static string GetOs()
 {
     string[] files = ["/etc/lsb-release", "/usr/lib/os-release", "/etc/os-release"];
     foreach (var file in files)
@@ -39,17 +42,19 @@ static string GetOS()
             var lines = File.ReadAllLines(file);
             foreach (var line in lines)
             {
-                if (line.StartsWith("PRETTY_NAME") || line.StartsWith("DISTRIB_DESCRIPTION"))
+                if (!line.StartsWith("PRETTY_NAME") && !line.StartsWith("DISTRIB_DESCRIPTION")) continue;
+
+                var split = line.Split("\"");
+                if (split.Length > 1)
                 {
-                    var split = line.Split("\"");
-                    if (split.Length > 1)
-                    {
-                        return split[1].Trim();
-                    }
+                    return split[1].Trim();
                 }
             }
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
 
     return unknown;
@@ -60,7 +65,7 @@ static string GetKernel()
     return new Command("uname -r").GetOutput().Trim();
 }
 
-static string GetCPU()
+static string GetCpu()
 {
     var lines = File.ReadAllLines("/proc/cpuinfo");
     foreach (var line in lines)
@@ -70,6 +75,7 @@ static string GetCPU()
             return line.Split(": ").Last().Trim();
         }
     }
+
     return unknown;
 }
 
@@ -82,13 +88,12 @@ static string GetSpeed()
     var cpuInfoLines = File.ReadAllLines("/proc/cpuinfo");
     foreach (var line in cpuInfoLines)
     {
-        if (line.StartsWith("cpu MHz"))
+        if (!line.StartsWith("cpu MHz")) continue;
+
+        var speedString = line.Split(": ").Last().Trim();
+        if (float.TryParse(speedString, out float speedFloat))
         {
-            var speedString = line.Split(": ").Last().Trim();
-            if (float.TryParse(speedString, out float speedFloat))
-            {
-                processorSpeeds.Add(speedFloat);
-            }
+            processorSpeeds.Add(speedFloat);
         }
     }
 
@@ -98,7 +103,8 @@ static string GetSpeed()
         currentSpeed = sum / processorSpeeds.Count / 1000;
     }
 
-    string[] files = [
+    string[] files =
+    [
         "/sys/devices/system/cpu/cpu0/cpufreq/bios_limit",
         "/sys/devices/system/cpu/cpu0/cpufreq/cpuinfo_max_freq",
         "/sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq",
@@ -116,7 +122,10 @@ static string GetSpeed()
                 }
             }
         }
-        catch { }
+        catch
+        {
+            // ignored
+        }
     }
 
     var result = new StringBuilder();
@@ -131,6 +140,7 @@ static string GetSpeed()
         {
             result.Append(" / ");
         }
+
         result.Append($"{Math.Round(maxSpeed, 2)} GHz");
 
         var percentage = currentSpeed / maxSpeed * 100;
@@ -153,12 +163,12 @@ static string GetMemory()
     {
         if (line.StartsWith("MemTotal"))
         {
-            var memString = line.Split(null).SkipLast(1).Last() ?? string.Empty;
+            var memString = line.Split(null).SkipLast(1).Last();
             _ = float.TryParse(memString, out totalMemory);
         }
         else if (line.StartsWith("MemAvailable"))
         {
-            var memString = line.Split(null).SkipLast(1).Last() ?? string.Empty;
+            var memString = line.Split(null).SkipLast(1).Last();
             _ = float.TryParse(memString, out availableMemory);
         }
     }
@@ -167,7 +177,8 @@ static string GetMemory()
     {
         var usedMemory = totalMemory - availableMemory;
         var percentage = usedMemory / totalMemory * 100;
-        return $"{Math.Round(usedMemory / 1024 / 1024, 2)}/{Math.Round(totalMemory / 1024 / 1024, 2)} GB ({Math.Round(percentage, 2)}%)";
+        return
+            $"{Math.Round(usedMemory / 1024 / 1024, 2)}/{Math.Round(totalMemory / 1024 / 1024, 2)} GB ({Math.Round(percentage, 2)}%)";
     }
 
     return unknown;

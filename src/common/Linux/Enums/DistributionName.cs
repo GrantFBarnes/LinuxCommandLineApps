@@ -1,8 +1,10 @@
+namespace Linux.Enums;
+
 public enum DistributionName
 {
     Alma,
     Arch,
-    CentOS,
+    CentOs,
     Debian,
     Fedora,
     Mint,

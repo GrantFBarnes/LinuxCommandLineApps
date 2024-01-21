@@ -1,6 +1,12 @@
-﻿using Spectre.Console;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Linux;
+using Spectre.Console;
 
-internal class Program
+namespace FileBackup;
+
+internal static class Program
 {
     private static string _homeDirectory = string.Empty;
     private static string _backupDirectory = string.Empty;
@@ -8,9 +14,10 @@ internal class Program
     private static List<string> _encryptFolders = [];
     private static string _passphrase = string.Empty;
 
-    private static void Main(string[] args)
+    private static void Main()
     {
-        _homeDirectory = Environment.GetEnvironmentVariable("HOME") ?? throw new Exception("HOME could not be determined");
+        _homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                         throw new Exception("HOME could not be determined");
         _backupDirectory = Path.Combine(_homeDirectory, "backups/home");
         Directory.CreateDirectory(_backupDirectory);
 
