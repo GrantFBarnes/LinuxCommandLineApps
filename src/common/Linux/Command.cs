@@ -72,4 +72,23 @@ public sealed class Command
 
         return output;
     }
+
+    public bool Exists()
+    {
+        var process = new Process()
+        {
+            StartInfo = new ProcessStartInfo()
+            {
+                FileName = "command",
+                Arguments = $"-v {_fileName}",
+                RedirectStandardOutput = true,
+            }
+        };
+
+        process.Start();
+        var output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
+
+        return !string.IsNullOrEmpty(output);
+    }
 }

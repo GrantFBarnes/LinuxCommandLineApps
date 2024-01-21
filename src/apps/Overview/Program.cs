@@ -181,6 +181,22 @@ static string GetUptime()
 
 static string GetPackages()
 {
+    var result = new List<string>();
+
     var distribution = new Distribution();
-    return $"{distribution.GetPackageCount()} ({distribution.GetPackageType()})";
+    result.Add($"{distribution.GetPackageCount()} ({distribution.GetPackageType()})");
+
+    var flatpakCommand = new Command("flatpak list");
+    if (flatpakCommand.Exists())
+    {
+        result.Add($"{flatpakCommand.GetOutput().Split("\n").Length} (flatpak)");
+    }
+
+    var snapCommand = new Command("snap list");
+    if (snapCommand.Exists())
+    {
+        result.Add($"{snapCommand.GetOutput().Split("\n").Length} (snap)");
+    }
+
+    return string.Join(", ", result);
 }
