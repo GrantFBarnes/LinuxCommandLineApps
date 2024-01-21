@@ -1,5 +1,6 @@
 ﻿// Overview
 
+using System.Security.Cryptography;
 using System.Text;
 
 Console.WriteLine($"    User: {GetUser()}");
@@ -145,12 +146,37 @@ static string GetSpeed()
 
 static string GetMemory()
 {
-    throw new NotImplementedException();
+    float totalMemory = 0;
+    float availableMemory = 0;
+
+    var memInfoLines = File.ReadAllLines("/proc/meminfo");
+    foreach (var line in memInfoLines)
+    {
+        if (line.StartsWith("MemTotal"))
+        {
+            var memString = line.Split(null).SkipLast(1).Last() ?? string.Empty;
+            _ = float.TryParse(memString, out totalMemory);
+        }
+        else if (line.StartsWith("MemAvailable"))
+        {
+            var memString = line.Split(null).SkipLast(1).Last() ?? string.Empty;
+            _ = float.TryParse(memString, out availableMemory);
+        }
+    }
+
+    if (totalMemory > 0)
+    {
+        var usedMemory = totalMemory - availableMemory;
+        var percentage = usedMemory / totalMemory * 100;
+        return $"{Math.Round(usedMemory / 1024 / 1024, 2)}/{Math.Round(totalMemory / 1024 / 1024, 2)} GB ({Math.Round(percentage, 2)}%)";
+    }
+
+    return unknown;
 }
 
 static string GetUptime()
 {
-    throw new NotImplementedException();
+    return new Command("uptime -p").GetOutput().Trim();
 }
 
 static string GetPackages()
