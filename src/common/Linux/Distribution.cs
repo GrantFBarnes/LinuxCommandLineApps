@@ -57,8 +57,20 @@ public sealed class Distribution
         }
 
         _installedPackages = GetInstalled();
-        InstalledFlatpaks = Flatpak.GetInstalled();
-        InstalledSnaps = Snap.GetInstalled();
+        InstalledFlatpaks = [];
+        InstalledSnaps = [];
+
+        var flatpakCommand = new Command("flatpak");
+        if (flatpakCommand.Exists())
+        {
+            InstalledFlatpaks = Flatpak.GetInstalled();
+        }
+
+        var snapCommand = new Command("snap");
+        if (snapCommand.Exists())
+        {
+            InstalledSnaps = Snap.GetInstalled();
+        }
     }
 
     private List<string> GetInstalled()
