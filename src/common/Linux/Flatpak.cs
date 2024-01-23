@@ -4,8 +4,11 @@ using System.Collections.Generic;
 
 namespace Linux;
 
-public sealed class Flatpak(string name, List<FlatpakRemote> remotes)
+public sealed class Flatpak
 {
+    public string Name = string.Empty;
+    public List<FlatpakRemote> Remotes = [];
+
     public static List<string> GetInstalled()
     {
         var packages = new List<string>();
@@ -52,21 +55,23 @@ public sealed class Flatpak(string name, List<FlatpakRemote> remotes)
 
     public void Install(FlatpakRemote remote, Distribution distribution)
     {
-        if (distribution.InstalledFlatpaks.Contains(name)) return;
-        distribution.InstalledFlatpaks.Add(name);
+        if (distribution.InstalledFlatpaks.Contains(Name)) return;
+        distribution.InstalledFlatpaks.Add(Name);
+
+        if (!Remotes.Contains(remote)) return;
 
         distribution.InstallPackage("flatpak");
         Setup(distribution);
 
-        new Command($"flatpak install {remote} {name} -y").Run();
+        new Command($"flatpak install {remote} {Name} -y").Run();
     }
 
     public void UnInstall(Distribution distribution)
     {
-        if (!distribution.InstalledFlatpaks.Contains(name)) return;
-        distribution.InstalledFlatpaks.Remove(name);
+        if (!distribution.InstalledFlatpaks.Contains(Name)) return;
+        distribution.InstalledFlatpaks.Remove(Name);
 
-        new Command($"flatpak remove {name} -y").Run();
+        new Command($"flatpak remove {Name} -y").Run();
     }
 
     public static void AutoRemove()

@@ -5,8 +5,13 @@ using System.Text;
 
 namespace Linux;
 
-public sealed class Snap(string name, bool isOffical, bool isClassic, string channel)
+public sealed class Snap
 {
+    public string Name = string.Empty;
+    public bool IsOffical = false;
+    public bool IsClassic = false;
+    public string? Channel = null;
+
     public static List<string> GetInstalled()
     {
         var packages = new List<string>();
@@ -40,23 +45,23 @@ public sealed class Snap(string name, bool isOffical, bool isClassic, string cha
 
     public void Install(Distribution distribution)
     {
-        if (distribution.InstalledSnaps.Contains(name)) return;
-        distribution.InstalledSnaps.Add(name);
+        if (distribution.InstalledSnaps.Contains(Name)) return;
+        distribution.InstalledSnaps.Add(Name);
 
         distribution.InstallPackage("snapd");
         Setup(distribution);
 
         var installCommand = new StringBuilder();
-        installCommand.Append($"sudo snap install {name}");
+        installCommand.Append($"sudo snap install {Name}");
 
-        if (isClassic)
+        if (IsClassic)
         {
             installCommand.Append(" --classic");
         }
 
-        if (string.IsNullOrEmpty(channel))
+        if (string.IsNullOrEmpty(Channel))
         {
-            installCommand.Append($" --channel {channel}");
+            installCommand.Append($" --channel {Channel}");
         }
 
         new Command(installCommand.ToString()).Run();
@@ -64,9 +69,9 @@ public sealed class Snap(string name, bool isOffical, bool isClassic, string cha
 
     public void UnInstall(Distribution distribution)
     {
-        if (!distribution.InstalledSnaps.Contains(name)) return;
-        distribution.InstalledSnaps.Remove(name);
+        if (!distribution.InstalledSnaps.Contains(Name)) return;
+        distribution.InstalledSnaps.Remove(Name);
 
-        new Command($"sudo snap remove {name}").Run();
+        new Command($"sudo snap remove {Name}").Run();
     }
 }
