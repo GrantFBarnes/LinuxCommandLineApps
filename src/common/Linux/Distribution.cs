@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 using Linux.Enums;
 using Spectre.Console;
 
@@ -10,6 +12,7 @@ public sealed class Distribution
     private readonly DistributionName _name;
     private readonly PackageManager _packageManager;
     private readonly Repository _repository;
+    private readonly List<string> _installedPackages;
 
     public Distribution()
     {
@@ -59,15 +62,44 @@ public sealed class Distribution
             default:
                 throw new Exception("distribution not found");
         }
+
+        _installedPackages = GetInstalledPackages();
     }
 
-    public int GetPackageCount() => _packageManager switch
+    private List<string> GetInstalledPackages()
     {
-        PackageManager.Apt => new Command("dpkg --list").GetOutput().Split("\n").Length,
-        PackageManager.Dnf => new Command("rpm -qa").GetOutput().Split("\n").Length,
-        PackageManager.Pacman => new Command("pacman -Q").GetOutput().Split("\n").Length,
-        _ => throw new NotImplementedException(),
-    };
+        var packages = new List<string>();
+
+        var packageList = _packageManager switch
+        {
+            PackageManager.Apt => new Command("apt list --installed").GetOutput(),
+            PackageManager.Dnf => new Command("dnf list installed").GetOutput(),
+            PackageManager.Pacman => new Command("pacman -Q").GetOutput(),
+            PackageManager.RpmOsTree => new Command("rpm -qa").GetOutput(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        foreach (var line in packageList.Split("\n"))
+        {
+            if (string.IsNullOrEmpty(line)) continue;
+
+            var package = _packageManager switch
+            {
+                PackageManager.Apt => line.Split("/").First(),
+                PackageManager.Dnf => string.Join(".", line.Split(null).First().Split(".").SkipLast(1)),
+                PackageManager.Pacman => line.Split(null).First(),
+                _ => string.Empty,
+            };
+
+            if (string.IsNullOrEmpty(package)) continue;
+
+            packages.Add(package);
+        }
+
+        return packages;
+    }
+
+    public int GetPackageCount() => _installedPackages.Count;
 
     public string GetPackageType() => _packageManager switch
     {
@@ -144,6 +176,8 @@ public sealed class Distribution
 
     private void InstallPackage(string package)
     {
+        if (_installedPackages.Contains(package)) return;
+
         switch (_packageManager)
         {
             case PackageManager.Apt:
@@ -159,5 +193,7 @@ public sealed class Distribution
                 new Command($"sudo rpm-ostree install {package} -y").Run();
                 break;
         }
+
+        _installedPackages.Add(package);
     }
 }
