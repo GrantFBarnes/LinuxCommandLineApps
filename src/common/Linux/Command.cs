@@ -14,19 +14,24 @@ public sealed class Command
 
     public Command(string text)
     {
-        text = text.Trim();
-        if (string.IsNullOrEmpty(text))
-        {
-            throw new Exception("no command provided");
-        }
-
-        var textSplit = text.Split(" ");
+        var textSplit = GetCleanCommandArgs(text);
         _fileName = textSplit.First();
         _arguments = string.Join(" ", textSplit.Skip(1));
 
         _workingDirectory = string.Empty;
         _hideOutput = false;
         _waitForExit = true;
+    }
+
+    private static string[] GetCleanCommandArgs(string text)
+    {
+        text = text.Trim();
+        if (string.IsNullOrEmpty(text))
+        {
+            throw new Exception("no command provided");
+        }
+
+        return text.Split(" ");
     }
 
     public Command WorkingDirectory(string directory)
@@ -76,6 +81,47 @@ public sealed class Command
         {
             process.WaitForExit();
         }
+    }
+
+    public void PipeInto(string text)
+    {
+        var outProcess = new Process()
+        {
+            StartInfo = new ProcessStartInfo()
+            {
+                FileName = _fileName,
+                Arguments = _arguments,
+                RedirectStandardOutput = true,
+            }
+        };
+
+        var inTextSplit = GetCleanCommandArgs(text);
+        var inProcess = new Process()
+        {
+            StartInfo = new ProcessStartInfo()
+            {
+                FileName = inTextSplit.First(),
+                Arguments = string.Join(" ", inTextSplit.Skip(1)),
+                RedirectStandardInput = true,
+                RedirectStandardOutput = true,
+            }
+        };
+
+        outProcess.Start();
+        inProcess.Start();
+
+        using (var sr = outProcess.StandardOutput)
+        using (var sw = inProcess.StandardInput)
+        {
+            string line;
+            while ((line = sr.ReadLine()) != null)
+            {
+                sw.WriteLine(line);
+            }
+        }
+
+        outProcess.WaitForExit();
+        inProcess.WaitForExit();
     }
 
     public string GetOutput()

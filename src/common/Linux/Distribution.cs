@@ -75,4 +75,16 @@ public sealed class Distribution
         PackageManager.Pacman => "pacman",
         _ => throw new NotImplementedException(),
     };
+
+    public void RepositorySetup()
+    {
+        if (_packageManager == PackageManager.Dnf)
+        {
+            const string dnfConfFile = "/etc/dnf/dnf.conf";
+            if (!File.Exists(dnfConfFile) || !File.ReadAllText(dnfConfFile).Contains("max_parallel_downloads"))
+            {
+                new Command($"echo \"max_parallel_downloads=10\"").PipeInto($"sudo tee --append {dnfConfFile}");
+            }
+        }
+    }
 }
