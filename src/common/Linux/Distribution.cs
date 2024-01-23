@@ -95,7 +95,9 @@ public sealed class Distribution
     }
 
     public int GetPackageCount() => _installedPackages.Count;
+
     public int GetFlatpakCount() => InstalledFlatpaks.Count;
+
     public int GetSnapCount() => InstalledSnaps.Count;
 
     public string GetPackageType() => PackageManager switch
