@@ -9,7 +9,6 @@ namespace Linux;
 
 public sealed class Distribution
 {
-    private readonly DistributionName _name;
     private readonly PackageManager _packageManager;
     private readonly Repository _repository;
     private readonly List<string> _installedPackages;
@@ -20,44 +19,36 @@ public sealed class Distribution
         switch (osRelease)
         {
             case var _ when osRelease.Contains("Arch"):
-                _name = DistributionName.Arch;
-                _repository = Repository.Arch;
                 _packageManager = PackageManager.Pacman;
+                _repository = Repository.Arch;
                 break;
             case var _ when osRelease.Contains("Alma"):
-                _name = DistributionName.Alma;
-                _repository = Repository.RedHat;
                 _packageManager = PackageManager.Dnf;
+                _repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("CentOS"):
-                _name = DistributionName.CentOs;
-                _repository = Repository.RedHat;
                 _packageManager = PackageManager.Dnf;
+                _repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("Debian"):
-                _name = DistributionName.Debian;
-                _repository = Repository.Debian;
                 _packageManager = PackageManager.Apt;
+                _repository = Repository.Debian;
                 break;
             case var _ when osRelease.Contains("Silverblue"):
-                _name = DistributionName.SilverBlue;
-                _repository = Repository.Fedora;
                 _packageManager = PackageManager.RpmOsTree;
+                _repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Fedora"):
-                _name = DistributionName.Fedora;
-                _repository = Repository.Fedora;
                 _packageManager = PackageManager.Dnf;
+                _repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Mint"):
-                _name = DistributionName.Mint;
-                _repository = Repository.Ubuntu;
                 _packageManager = PackageManager.Apt;
+                _repository = Repository.Ubuntu;
                 break;
             case var _ when osRelease.Contains("Ubuntu"):
-                _name = DistributionName.Ubuntu;
-                _repository = Repository.Ubuntu;
                 _packageManager = PackageManager.Apt;
+                _repository = Repository.Ubuntu;
                 break;
             default:
                 throw new Exception("distribution not found");
