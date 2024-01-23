@@ -116,7 +116,9 @@ public sealed class Distribution
             const string dnfConfFile = "/etc/dnf/dnf.conf";
             if (!File.Exists(dnfConfFile) || !File.ReadAllText(dnfConfFile).Contains("max_parallel_downloads"))
             {
-                new Command($"echo \"max_parallel_downloads=10\"").PipeInto($"sudo tee --append {dnfConfFile}");
+                new Command($"echo \"max_parallel_downloads=10\"")
+                    .HideOutput(true)
+                    .PipeInto($"sudo tee --append {dnfConfFile}");
             }
 
             if (AnsiConsole.Confirm("Do you want to enable EPEL/RPM Fusion Repositories?", false))
@@ -177,6 +179,7 @@ public sealed class Distribution
     private void InstallPackage(string package)
     {
         if (_installedPackages.Contains(package)) return;
+        _installedPackages.Add(package);
 
         switch (_packageManager)
         {
@@ -193,7 +196,43 @@ public sealed class Distribution
                 new Command($"sudo rpm-ostree install {package} -y").Run();
                 break;
         }
+    }
 
-        _installedPackages.Add(package);
+    private void UnInstallPackage(string package)
+    {
+        if (!_installedPackages.Contains(package)) return;
+        _installedPackages.Remove(package);
+
+        switch (_packageManager)
+        {
+            case PackageManager.Apt:
+                new Command($"sudo apt remove {package} -Vy").Run();
+                break;
+            case PackageManager.Dnf:
+                new Command($"sudo dnf remove {package} -y").Run();
+                break;
+            case PackageManager.Pacman:
+                new Command($"sudo pacman -Rsun {package} --noconfirm").Run();
+                break;
+            case PackageManager.RpmOsTree:
+                new Command($"sudo rpm-ostree uninstall {package} -y").Run();
+                break;
+        }
+    }
+
+    private void AutoRemove()
+    {
+        switch (_packageManager)
+        {
+            case PackageManager.Apt:
+                new Command("sudo apt autoremove -Vy").Run();
+                break;
+            case PackageManager.Dnf:
+                new Command("sudo dnf autoremove -y").Run();
+                break;
+            case PackageManager.Pacman:
+                new Command("pacman -Qdtq").PipeInto("sudo pacman -Rs -");
+                break;
+        }
     }
 }

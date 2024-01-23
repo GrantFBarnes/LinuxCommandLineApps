@@ -96,15 +96,21 @@ public sealed class Command
         };
 
         var inTextSplit = GetCleanCommandArgs(text);
+        var inStartInfo = new ProcessStartInfo()
+        {
+            FileName = inTextSplit.First(),
+            Arguments = string.Join(" ", inTextSplit.Skip(1)),
+            RedirectStandardInput = true,
+        };
+
+        if (_hideOutput)
+        {
+            inStartInfo.RedirectStandardOutput = true;
+        }
+
         var inProcess = new Process()
         {
-            StartInfo = new ProcessStartInfo()
-            {
-                FileName = inTextSplit.First(),
-                Arguments = string.Join(" ", inTextSplit.Skip(1)),
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-            }
+            StartInfo = inStartInfo,
         };
 
         outProcess.Start();
@@ -120,8 +126,11 @@ public sealed class Command
             }
         }
 
-        outProcess.WaitForExit();
-        inProcess.WaitForExit();
+        if (_waitForExit)
+        {
+            outProcess.WaitForExit();
+            inProcess.WaitForExit();
+        }
     }
 
     public string GetOutput()
