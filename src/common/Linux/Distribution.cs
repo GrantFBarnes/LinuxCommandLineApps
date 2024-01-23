@@ -9,7 +9,7 @@ namespace Linux;
 
 public sealed class Distribution
 {
-    private readonly PackageManager _packageManager;
+    internal readonly PackageManager PackageManager;
     private readonly Repository _repository;
     private readonly List<string> _installedPackages;
 
@@ -19,35 +19,35 @@ public sealed class Distribution
         switch (osRelease)
         {
             case var _ when osRelease.Contains("Arch"):
-                _packageManager = PackageManager.Pacman;
+                PackageManager = PackageManager.Pacman;
                 _repository = Repository.Arch;
                 break;
             case var _ when osRelease.Contains("Alma"):
-                _packageManager = PackageManager.Dnf;
+                PackageManager = PackageManager.Dnf;
                 _repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("CentOS"):
-                _packageManager = PackageManager.Dnf;
+                PackageManager = PackageManager.Dnf;
                 _repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("Debian"):
-                _packageManager = PackageManager.Apt;
+                PackageManager = PackageManager.Apt;
                 _repository = Repository.Debian;
                 break;
             case var _ when osRelease.Contains("Silverblue"):
-                _packageManager = PackageManager.RpmOsTree;
+                PackageManager = PackageManager.RpmOsTree;
                 _repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Fedora"):
-                _packageManager = PackageManager.Dnf;
+                PackageManager = PackageManager.Dnf;
                 _repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Mint"):
-                _packageManager = PackageManager.Apt;
+                PackageManager = PackageManager.Apt;
                 _repository = Repository.Ubuntu;
                 break;
             case var _ when osRelease.Contains("Ubuntu"):
-                _packageManager = PackageManager.Apt;
+                PackageManager = PackageManager.Apt;
                 _repository = Repository.Ubuntu;
                 break;
             default:
@@ -61,7 +61,7 @@ public sealed class Distribution
     {
         var packages = new List<string>();
 
-        var packageList = _packageManager switch
+        var packageList = PackageManager switch
         {
             PackageManager.Apt => new Command("apt list --installed").GetOutput(),
             PackageManager.Dnf => new Command("dnf list installed").GetOutput(),
@@ -74,7 +74,7 @@ public sealed class Distribution
         {
             if (string.IsNullOrEmpty(line)) continue;
 
-            var package = _packageManager switch
+            var package = PackageManager switch
             {
                 PackageManager.Apt => line.Split("/").First(),
                 PackageManager.Dnf => string.Join(".", line.Split(null).First().Split(".").SkipLast(1)),
@@ -92,7 +92,7 @@ public sealed class Distribution
 
     public int GetPackageCount() => _installedPackages.Count;
 
-    public string GetPackageType() => _packageManager switch
+    public string GetPackageType() => PackageManager switch
     {
         PackageManager.Apt => "dpkg",
         PackageManager.Dnf => "rpm",
@@ -102,7 +102,7 @@ public sealed class Distribution
 
     public void RepositorySetup()
     {
-        if (_packageManager == PackageManager.Dnf)
+        if (PackageManager == PackageManager.Dnf)
         {
             const string dnfConfFile = "/etc/dnf/dnf.conf";
             if (!File.Exists(dnfConfFile) || !File.ReadAllText(dnfConfFile).Contains("max_parallel_downloads"))
@@ -149,7 +149,7 @@ public sealed class Distribution
 
     public void Update()
     {
-        switch (_packageManager)
+        switch (PackageManager)
         {
             case PackageManager.Apt:
                 new Command("sudo apt update").Run();
@@ -167,12 +167,12 @@ public sealed class Distribution
         }
     }
 
-    private void InstallPackage(string package)
+    public void InstallPackage(string package)
     {
         if (_installedPackages.Contains(package)) return;
         _installedPackages.Add(package);
 
-        switch (_packageManager)
+        switch (PackageManager)
         {
             case PackageManager.Apt:
                 new Command($"sudo apt install {package} -Vy").Run();
@@ -189,12 +189,12 @@ public sealed class Distribution
         }
     }
 
-    private void UnInstallPackage(string package)
+    public void UnInstallPackage(string package)
     {
         if (!_installedPackages.Contains(package)) return;
         _installedPackages.Remove(package);
 
-        switch (_packageManager)
+        switch (PackageManager)
         {
             case PackageManager.Apt:
                 new Command($"sudo apt remove {package} -Vy").Run();
@@ -211,9 +211,9 @@ public sealed class Distribution
         }
     }
 
-    private void AutoRemove()
+    public void AutoRemove()
     {
-        switch (_packageManager)
+        switch (PackageManager)
         {
             case PackageManager.Apt:
                 new Command("sudo apt autoremove -Vy").Run();
