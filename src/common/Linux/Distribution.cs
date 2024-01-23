@@ -12,6 +12,8 @@ public sealed class Distribution
     internal readonly PackageManager PackageManager;
     private readonly Repository _repository;
     private readonly List<string> _installedPackages;
+    internal readonly List<string> InstalledFlatpaks;
+    internal readonly List<string> InstalledSnaps;
 
     public Distribution()
     {
@@ -54,10 +56,12 @@ public sealed class Distribution
                 throw new Exception("distribution not found");
         }
 
-        _installedPackages = GetInstalledPackages();
+        _installedPackages = GetInstalled();
+        InstalledFlatpaks = Flatpak.GetInstalled();
+        InstalledSnaps = Snap.GetInstalled();
     }
 
-    private List<string> GetInstalledPackages()
+    private List<string> GetInstalled()
     {
         var packages = new List<string>();
 
@@ -91,6 +95,8 @@ public sealed class Distribution
     }
 
     public int GetPackageCount() => _installedPackages.Count;
+    public int GetFlatpakCount() => InstalledFlatpaks.Count;
+    public int GetSnapCount() => InstalledSnaps.Count;
 
     public string GetPackageType() => PackageManager switch
     {

@@ -40,6 +40,9 @@ public sealed class Snap(string name, bool isOffical, bool isClassic, string cha
 
     public void Install(Distribution distribution)
     {
+        if (distribution.InstalledSnaps.Contains(name)) return;
+        distribution.InstalledSnaps.Add(name);
+
         distribution.InstallPackage("snapd");
         Setup(distribution);
 
@@ -59,8 +62,11 @@ public sealed class Snap(string name, bool isOffical, bool isClassic, string cha
         new Command(installCommand.ToString()).Run();
     }
 
-    public void UnInstall()
+    public void UnInstall(Distribution distribution)
     {
+        if (!distribution.InstalledSnaps.Contains(name)) return;
+        distribution.InstalledSnaps.Remove(name);
+
         new Command($"sudo snap remove {name}").Run();
     }
 }

@@ -52,14 +52,20 @@ public sealed class Flatpak(string name, List<FlatpakRemote> remotes)
 
     public void Install(FlatpakRemote remote, Distribution distribution)
     {
+        if (distribution.InstalledFlatpaks.Contains(name)) return;
+        distribution.InstalledFlatpaks.Add(name);
+
         distribution.InstallPackage("flatpak");
         Setup(distribution);
 
         new Command($"flatpak install {remote} {name} -y").Run();
     }
 
-    public void UnInstall()
+    public void UnInstall(Distribution distribution)
     {
+        if (!distribution.InstalledFlatpaks.Contains(name)) return;
+        distribution.InstalledFlatpaks.Remove(name);
+
         new Command($"flatpak remove {name} -y").Run();
     }
 
