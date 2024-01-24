@@ -11,7 +11,7 @@ internal sealed class MainMenu(Distribution distribution)
     {
         { "Repository Setup", distribution.RepositorySetup },
         { "Update Packages", distribution.Update },
-        { "Install Packages", new InstallMenu(distribution).Run },
+        { "Install Packages", new ChoosePackageCategoryMenu(distribution).Run },
         { "Auto Remove Packages", distribution.AutoRemove },
         { "Exit", () => { } },
     };

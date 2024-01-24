@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace PackageHandler;
 
-internal sealed class InstallMenu(Distribution distribution)
+internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
 {
     public void Run()
     {
