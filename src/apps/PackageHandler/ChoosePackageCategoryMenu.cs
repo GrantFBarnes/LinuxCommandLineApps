@@ -22,7 +22,11 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     .AddChoices(Enum.GetValues(typeof(PackageCategory)).Cast<PackageCategory>())
                     .UseConverter(x => x.ToString())
             );
-            new ChoosePackageMenu(distribution, GetPackages(selectedCategory)).Run();
+
+            if (selectedCategory != PackageCategory.Back)
+            {
+                new ChoosePackageMenu(distribution, GetPackages(selectedCategory)).Run();
+            }
         } while (selectedCategory != PackageCategory.Back);
     }
 

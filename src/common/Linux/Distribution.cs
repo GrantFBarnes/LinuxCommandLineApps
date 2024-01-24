@@ -120,6 +120,29 @@ public sealed class Distribution
         _ => throw new NotImplementedException(),
     };
 
+    public InstallType GetPackageInstallType(Package package)
+    {
+        if (package.Repositories.TryGetValue(_repository, out var packages))
+        {
+            if (packages.Any(x => _installedPackages.Contains(x)))
+            {
+                return InstallType.Repository;
+            }
+        }
+
+        if (package.Flatpak != null && InstalledFlatpaks.Contains(package.Flatpak.Name))
+        {
+            return InstallType.Flatpak;
+        }
+
+        if (package.Snap != null && InstalledSnaps.Contains(package.Snap.Name))
+        {
+            return InstallType.Flatpak;
+        }
+
+        return InstallType.None;
+    }
+
     public void RepositorySetup()
     {
         if (PackageManager == PackageManager.Dnf)

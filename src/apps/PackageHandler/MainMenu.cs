@@ -13,7 +13,7 @@ internal sealed class MainMenu(Distribution distribution)
         { "Update Packages", distribution.Update },
         { "Install Packages", new ChoosePackageCategoryMenu(distribution).Run },
         { "Auto Remove Packages", distribution.AutoRemove },
-        { "Back", () => { } },
+        { "Exit", () => { } },
     };
 
     public void Run()
@@ -28,6 +28,6 @@ internal sealed class MainMenu(Distribution distribution)
                     .AddChoices(_actions.Keys)
             );
             _actions[selectedAction]();
-        } while (selectedAction != "Back");
+        } while (selectedAction != "Exit");
     }
 }
