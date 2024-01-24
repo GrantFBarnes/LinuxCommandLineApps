@@ -1,57 +1,13 @@
-﻿using System;
-using Linux;
-using System.Collections.Generic;
-using Linux.Enums;
-using PackageHandler.Enums;
-using Spectre.Console;
+﻿using Linux;
 
-var packages = GetPackages(PackageCategory.Server);
+namespace PackageHandler;
 
-var selectedPackage = AnsiConsole.Prompt(
-    new SelectionPrompt<Package>()
-        .Title("Select a Package")
-        .PageSize(15)
-        .AddChoices(packages)
-        .UseConverter(x => x.Name)
-);
-
-Console.WriteLine($"You chose {selectedPackage.Name}");
-
-return;
-
-List<Package> GetPackages(PackageCategory category)
+internal static class Program
 {
-    return category switch
+    public static void Main()
     {
-        PackageCategory.Server =>
-        [
-            new Package()
-            {
-                Name = "flatpak",
-                DesktopEnvironment = null,
-                Repositories = new Dictionary<Repository, List<string>>()
-                {
-                    { Repository.Arch, ["flatpak"] },
-                    { Repository.Debian, ["flatpak"] },
-                    { Repository.Fedora, ["flatpak"] },
-                    { Repository.RedHat, ["flatpak"] },
-                    { Repository.Ubuntu, ["flatpak"] },
-                },
-                Flatpak = null,
-                Snap = null,
-                PreInstall = null,
-                PostInstall = null,
-            }
-        ],
-        PackageCategory.Desktop => [],
-        PackageCategory.Applications => [],
-        PackageCategory.Browsers => [],
-        PackageCategory.Communication => [],
-        PackageCategory.Games => [],
-        PackageCategory.MultiMedia => [],
-        PackageCategory.Editors => [],
-        PackageCategory.Software => [],
-        PackageCategory.Utilities => [],
-        _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
-    };
+        var distribution = new Distribution();
+        var mainMenu = new MainMenu(distribution);
+        mainMenu.Run();
+    }
 }

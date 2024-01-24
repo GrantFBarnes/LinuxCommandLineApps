@@ -12,4 +12,5 @@ public enum PackageCategory
     Editors,
     Software,
     Utilities,
+    Exit,
 }
