@@ -185,6 +185,18 @@ public sealed class Distribution
                 new Command("rpm-ostree upgrade").Run();
                 break;
         }
+
+        var flatpakCommand = new Command("flatpak");
+        if (flatpakCommand.Exists())
+        {
+            Flatpak.Update();
+        }
+
+        var snapCommand = new Command("snap");
+        if (snapCommand.Exists())
+        {
+            Snap.Update();
+        }
     }
 
     public void InstallPackage(string package)
@@ -244,6 +256,12 @@ public sealed class Distribution
             case PackageManager.Pacman:
                 new Command("pacman -Qdtq").PipeInto("sudo pacman -Rs -");
                 break;
+        }
+
+        var flatpakCommand = new Command("flatpak");
+        if (flatpakCommand.Exists())
+        {
+            Flatpak.AutoRemove();
         }
     }
 }
