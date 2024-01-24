@@ -30,6 +30,11 @@ internal sealed class ChoosePackageMenu
                     .AddChoices(_packages)
                     .UseConverter(GetPackageDisplay)
             );
+
+            if (selectedPackage.Name != "Back")
+            {
+                new ChooseInstallMethod(_distribution, selectedPackage).Run();
+            }
         } while (selectedPackage.Name != "Back");
     }
 
@@ -38,15 +43,15 @@ internal sealed class ChoosePackageMenu
         var display = new StringBuilder();
         display.Append(package.Name);
 
-        switch (_distribution.GetPackageInstallType(package))
+        switch (_distribution.GetPackageInstallMethod(package))
         {
-            case InstallType.Repository:
+            case InstallMethod.Repository:
                 display.Append(" [green](repository)[/]");
                 break;
-            case InstallType.Flatpak:
+            case InstallMethod.Flatpak:
                 display.Append(" [blue](flatpak)[/]");
                 break;
-            case InstallType.Snap:
+            case InstallMethod.Snap:
                 display.Append(" [purple](snap)[/]");
                 break;
         }

@@ -120,27 +120,51 @@ public sealed class Distribution
         _ => throw new NotImplementedException(),
     };
 
-    public InstallType GetPackageInstallType(Package package)
+    public InstallMethod GetPackageInstallMethod(Package package)
     {
         if (package.Repositories.TryGetValue(_repository, out var packages))
         {
             if (packages.Any(x => _installedPackages.Contains(x)))
             {
-                return InstallType.Repository;
+                return InstallMethod.Repository;
             }
         }
 
         if (package.Flatpak != null && InstalledFlatpaks.Contains(package.Flatpak.Name))
         {
-            return InstallType.Flatpak;
+            return InstallMethod.Flatpak;
         }
 
         if (package.Snap != null && InstalledSnaps.Contains(package.Snap.Name))
         {
-            return InstallType.Flatpak;
+            return InstallMethod.Flatpak;
         }
 
-        return InstallType.None;
+        return InstallMethod.None;
+    }
+
+    public List<InstallMethod> GetPackageInstallMethodOptions(Package package)
+    {
+        var options = new List<InstallMethod>();
+
+        if (package.Repositories.ContainsKey(_repository))
+        {
+            options.Add(InstallMethod.Repository);
+        }
+
+        if (package.Flatpak != null)
+        {
+            options.Add(InstallMethod.Flatpak);
+        }
+
+        if (package.Snap != null)
+        {
+            options.Add(InstallMethod.Snap);
+        }
+
+        options.Add(InstallMethod.None);
+
+        return options;
     }
 
     public void RepositorySetup()

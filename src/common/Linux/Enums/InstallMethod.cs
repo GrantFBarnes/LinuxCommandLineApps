@@ -1,6 +1,6 @@
 namespace Linux.Enums;
 
-public enum InstallType
+public enum InstallMethod
 {
     Repository,
     Flatpak,
