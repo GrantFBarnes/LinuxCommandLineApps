@@ -12,8 +12,8 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
 {
     public void Run()
     {
-        var selectedCategory = PackageCategory.Server;
-        while (selectedCategory != PackageCategory.Exit)
+        PackageCategory selectedCategory;
+        do
         {
             selectedCategory = AnsiConsole.Prompt(
                 new SelectionPrompt<PackageCategory>()
@@ -22,12 +22,11 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     .AddChoices(Enum.GetValues(typeof(PackageCategory)).Cast<PackageCategory>())
                     .UseConverter(x => x.ToString())
             );
-
-            var packages = GetPackages(selectedCategory);
-        }
+            new ChoosePackageMenu(distribution, GetPackages(selectedCategory)).Run();
+        } while (selectedCategory != PackageCategory.Back);
     }
 
-    private static IEnumerable<Package> GetPackages(PackageCategory category)
+    private static List<Package> GetPackages(PackageCategory category)
     {
         return category switch
         {
@@ -60,7 +59,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
             PackageCategory.Editors => [],
             PackageCategory.Software => [],
             PackageCategory.Utilities => [],
-            PackageCategory.Exit => [],
+            PackageCategory.Back => [],
             _ => throw new ArgumentOutOfRangeException(nameof(category), category, null)
         };
     }
