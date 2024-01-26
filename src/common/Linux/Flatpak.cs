@@ -4,10 +4,10 @@ using System.Collections.Generic;
 
 namespace Linux;
 
-public sealed class Flatpak
+public sealed class Flatpak(string name, List<FlatpakRemote> remotes)
 {
-    public readonly string Name = string.Empty;
-    public readonly List<FlatpakRemote> Remotes = [];
+    public readonly string Name = name;
+    public readonly List<FlatpakRemote> Remotes = remotes;
 
     public static List<string> GetInstalled()
     {

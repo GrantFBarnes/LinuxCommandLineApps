@@ -162,6 +162,7 @@ public sealed class Distribution
             options.Add(InstallMethod.Snap);
         }
 
+        options.Add(InstallMethod.Uninstall);
         options.Add(InstallMethod.None);
 
         return options;

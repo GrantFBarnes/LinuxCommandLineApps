@@ -7,13 +7,14 @@ namespace PackageHandler;
 
 internal sealed class ChooseInstallMethod(Distribution distribution, Package package)
 {
-    private readonly InstallMethod _installedAsMethod = distribution.GetPackageInstallMethod(package);
+    private InstallMethod _installedAsMethod = distribution.GetPackageInstallMethod(package);
     private readonly List<InstallMethod> _installMethodOptions = distribution.GetPackageInstallMethodOptions(package);
 
     public void Run()
     {
         while (true)
         {
+            _installedAsMethod = distribution.GetPackageInstallMethod(package);
             var selectedMethod = AnsiConsole.Prompt(
                 new SelectionPrompt<InstallMethod>()
                     .Title("Choose an Install Method")
@@ -58,18 +59,42 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
 
     private string GetInstallMethodDisplay(InstallMethod method)
     {
-        var display = method switch
+        var display = string.Empty;
+        switch (method)
         {
-            InstallMethod.Repository => "Repository",
-            InstallMethod.Flatpak => "Flatpak",
-            InstallMethod.Snap => "Snap",
-            InstallMethod.None => "Back",
-            _ => "",
-        };
+            case InstallMethod.Repository:
+                display = "[green]Repository[/]";
+                break;
+            case InstallMethod.Flatpak:
+                display = "[blue]Flatpak[/]";
+                break;
+            case InstallMethod.Snap:
+                display = "[purple]Snap[/]";
+                if (package.Snap != null)
+                {
+                    if (package.Snap.IsOfficial)
+                    {
+                        display += " - Official";
+                    }
+
+                    if (package.Snap.IsClassic)
+                    {
+                        display += " [darkgoldenrod](classic)[/]";
+                    }
+                }
+
+                break;
+            case InstallMethod.Uninstall:
+                display = "[red]Uninstall[/]";
+                break;
+            case InstallMethod.None:
+                display = "Back";
+                break;
+        }
 
         if (method != InstallMethod.None && method == _installedAsMethod)
         {
-            display += " [red](installed)[/]";
+            display += " [cyan](installed)[/]";
         }
 
         return display;

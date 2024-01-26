@@ -5,12 +5,11 @@ using System.Text;
 
 namespace Linux;
 
-public sealed class Snap
+public sealed class Snap(string name, bool isOfficial, bool isClassic, string? channel = null)
 {
-    public string Name = string.Empty;
-    public bool IsOffical = false;
-    public bool IsClassic = false;
-    public string? Channel = null;
+    public readonly string Name = name;
+    public readonly bool IsOfficial = isOfficial;
+    public readonly bool IsClassic = isClassic;
 
     public static List<string> GetInstalled()
     {
@@ -59,9 +58,9 @@ public sealed class Snap
             installCommand.Append(" --classic");
         }
 
-        if (string.IsNullOrEmpty(Channel))
+        if (string.IsNullOrEmpty(channel))
         {
-            installCommand.Append($" --channel {Channel}");
+            installCommand.Append($" --channel {channel}");
         }
 
         new Command(installCommand.ToString()).Run();
