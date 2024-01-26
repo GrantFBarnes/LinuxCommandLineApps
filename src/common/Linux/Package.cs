@@ -11,6 +11,6 @@ public sealed class Package
     public Dictionary<Repository, List<string>> Repositories = new();
     public Flatpak? Flatpak = null;
     public Snap? Snap = null;
-    public Action? PreInstall = null;
-    public Action? PostInstall = null;
+    public Action<Distribution, InstallMethod>? PreInstall = null;
+    public Action<Distribution, InstallMethod>? PostInstall = null;
 }

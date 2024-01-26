@@ -11,7 +11,7 @@ namespace Linux;
 public sealed class Distribution
 {
     internal readonly PackageManager PackageManager;
-    private readonly Repository _repository;
+    public readonly Repository Repository;
     private List<string> _installedPackages = [];
     internal List<string> InstalledFlatpaks = [];
     internal List<string> InstalledSnaps = [];
@@ -23,35 +23,35 @@ public sealed class Distribution
         {
             case var _ when osRelease.Contains("Arch"):
                 PackageManager = PackageManager.Pacman;
-                _repository = Repository.Arch;
+                Repository = Repository.Arch;
                 break;
             case var _ when osRelease.Contains("Alma"):
                 PackageManager = PackageManager.Dnf;
-                _repository = Repository.RedHat;
+                Repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("CentOS"):
                 PackageManager = PackageManager.Dnf;
-                _repository = Repository.RedHat;
+                Repository = Repository.RedHat;
                 break;
             case var _ when osRelease.Contains("Debian"):
                 PackageManager = PackageManager.Apt;
-                _repository = Repository.Debian;
+                Repository = Repository.Debian;
                 break;
             case var _ when osRelease.Contains("Silverblue"):
                 PackageManager = PackageManager.RpmOsTree;
-                _repository = Repository.Fedora;
+                Repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Fedora"):
                 PackageManager = PackageManager.Dnf;
-                _repository = Repository.Fedora;
+                Repository = Repository.Fedora;
                 break;
             case var _ when osRelease.Contains("Mint"):
                 PackageManager = PackageManager.Apt;
-                _repository = Repository.Ubuntu;
+                Repository = Repository.Ubuntu;
                 break;
             case var _ when osRelease.Contains("Ubuntu"):
                 PackageManager = PackageManager.Apt;
-                _repository = Repository.Ubuntu;
+                Repository = Repository.Ubuntu;
                 break;
             default:
                 throw new Exception("distribution not found");
@@ -138,14 +138,14 @@ public sealed class Distribution
 
     public bool IsPackageAvailable(Package package)
     {
-        return package.Repositories.ContainsKey(_repository)
+        return package.Repositories.ContainsKey(Repository)
                || package.Flatpak != null
                || package.Snap != null;
     }
 
     public InstallMethod GetPackageInstallMethod(Package package)
     {
-        if (package.Repositories.TryGetValue(_repository, out var packages))
+        if (package.Repositories.TryGetValue(Repository, out var packages))
         {
             if (packages.Any(x => _installedPackages.Contains(x)))
             {
@@ -170,7 +170,7 @@ public sealed class Distribution
     {
         var options = new List<InstallMethod>();
 
-        if (package.Repositories.ContainsKey(_repository))
+        if (package.Repositories.ContainsKey(Repository))
         {
             options.Add(InstallMethod.Repository);
         }
@@ -205,7 +205,7 @@ public sealed class Distribution
 
             if (AnsiConsole.Confirm("Do you want to enable EPEL/RPM Fusion Repositories?", false))
             {
-                switch (_repository)
+                switch (Repository)
                 {
                     case Repository.Fedora:
                         Install("https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-39.noarch.rpm");
@@ -219,7 +219,7 @@ public sealed class Distribution
 
                 if (AnsiConsole.Confirm("Do you want to enable [red]Non-Free[/] EPEL/RPM Fusion Repositories?", false))
                 {
-                    switch (_repository)
+                    switch (Repository)
                     {
                         case Repository.Fedora:
                             Install(
@@ -271,14 +271,14 @@ public sealed class Distribution
 
     public void InstallPackage(Package package)
     {
-        if (!package.Repositories.TryGetValue(_repository, out var packageList)) return;
+        if (!package.Repositories.TryGetValue(Repository, out var packageList)) return;
         foreach (var pkg in packageList)
         {
             Install(pkg);
         }
     }
 
-    internal void Install(string package)
+    public void Install(string package)
     {
         if (_installedPackages.Contains(package)) return;
         _installedPackages.Add(package);
@@ -302,7 +302,7 @@ public sealed class Distribution
 
     public void UnInstallPackage(Package package)
     {
-        if (!package.Repositories.TryGetValue(_repository, out var packageList)) return;
+        if (!package.Repositories.TryGetValue(Repository, out var packageList)) return;
         foreach (var pkg in packageList)
         {
             UnInstall(pkg);

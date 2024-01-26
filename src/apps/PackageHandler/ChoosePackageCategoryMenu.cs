@@ -73,6 +73,22 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["dotnet-runtime-8.0"] },
                     },
                     Snap = new Snap("dotnet-runtime-80", true),
+                    PreInstall = (Distribution distribution, InstallMethod method) =>
+                    {
+                        if (method == InstallMethod.Repository)
+                        {
+                            if (distribution.Repository == Repository.Debian)
+                            {
+                                distribution.Install("wget");
+                                new Command(
+                                        "wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb")
+                                    .Run();
+                                new Command("sudo dpkg -i packages-microsoft-prod.deb").Run();
+                                new Command("rm packages-microsoft-prod.deb").Run();
+                                distribution.Update();
+                            }
+                        }
+                    },
                 },
                 new Package
                 {
@@ -86,6 +102,22 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["dotnet-sdk-8.0"] },
                     },
                     Snap = new Snap("dotnet-sdk", true, true, "8.0/stable"),
+                    PreInstall = (Distribution distribution, InstallMethod method) =>
+                    {
+                        if (method == InstallMethod.Repository)
+                        {
+                            if (distribution.Repository == Repository.Debian)
+                            {
+                                distribution.Install("wget");
+                                new Command(
+                                        "wget https://packages.microsoft.com/config/debian/12/packages-microsoft-prod.deb -O packages-microsoft-prod.deb")
+                                    .Run();
+                                new Command("sudo dpkg -i packages-microsoft-prod.deb").Run();
+                                new Command("rm packages-microsoft-prod.deb").Run();
+                                distribution.Update();
+                            }
+                        }
+                    },
                 },
                 new Package
                 {

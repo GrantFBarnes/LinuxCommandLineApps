@@ -1,3 +1,4 @@
+using System;
 using Linux.Enums;
 using Linux;
 using Spectre.Console;
@@ -28,32 +29,28 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
                 break;
             }
 
-            if (selectedMethod == InstallMethod.Repository)
+            if (selectedMethod != InstallMethod.Repository) distribution.UnInstallPackage(package);
+            if (selectedMethod != InstallMethod.Flatpak) package.Flatpak?.UnInstall(distribution);
+            if (selectedMethod != InstallMethod.Snap) package.Snap?.UnInstall(distribution);
+
+            package.PreInstall?.Invoke(distribution, selectedMethod);
+
+            switch (selectedMethod)
             {
-                distribution.InstallPackage(package);
-            }
-            else
-            {
-                distribution.UnInstallPackage(package);
+                case InstallMethod.Repository:
+                    distribution.InstallPackage(package);
+                    break;
+                case InstallMethod.Flatpak:
+                    new ChooseFlatpakRemote(distribution, package.Flatpak).Run();
+                    break;
+                case InstallMethod.Snap:
+                    package.Snap?.Install(distribution);
+                    break;
+                default:
+                    throw new Exception("method not supported");
             }
 
-            if (selectedMethod == InstallMethod.Flatpak)
-            {
-                new ChooseFlatpakRemote(distribution, package.Flatpak).Run();
-            }
-            else
-            {
-                package.Flatpak?.UnInstall(distribution);
-            }
-
-            if (selectedMethod == InstallMethod.Snap)
-            {
-                package.Snap?.Install(distribution);
-            }
-            else
-            {
-                package.Snap?.UnInstall(distribution);
-            }
+            package.PostInstall?.Invoke(distribution, selectedMethod);
         }
     }
 
