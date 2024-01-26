@@ -39,6 +39,23 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
             [
                 new Package()
                 {
+                    Name = "dotnet - C# SDK 8.0 LTS",
+                    DesktopEnvironment = null,
+                    Repositories = new Dictionary<Repository, List<string>>()
+                    {
+                        { Repository.Arch, ["dotnet-sdk-8.0"] },
+                        { Repository.Debian, ["dotnet-sdk-8.0"] },
+                        { Repository.Fedora, ["dotnet-sdk-8.0"] },
+                        { Repository.RedHat, ["dotnet-sdk-8.0"] },
+                        { Repository.Ubuntu, ["dotnet-sdk-8.0"] },
+                    },
+                    Flatpak = null,
+                    Snap = new Snap("dotnet-sdk", true, true, "8.0/stable"),
+                    PreInstall = null,
+                    PostInstall = null,
+                },
+                new Package()
+                {
                     Name = "flatpak",
                     DesktopEnvironment = null,
                     Repositories = new Dictionary<Repository, List<string>>()
@@ -53,7 +70,24 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     Snap = null,
                     PreInstall = null,
                     PostInstall = null,
-                }
+                },
+                new Package()
+                {
+                    Name = "htop",
+                    DesktopEnvironment = null,
+                    Repositories = new Dictionary<Repository, List<string>>()
+                    {
+                        { Repository.Arch, ["htop"] },
+                        { Repository.Debian, ["htop"] },
+                        { Repository.Fedora, ["htop"] },
+                        { Repository.RedHat, ["htop"] },
+                        { Repository.Ubuntu, ["htop"] },
+                    },
+                    Flatpak = null,
+                    Snap = null,
+                    PreInstall = null,
+                    PostInstall = null,
+                },
             ],
             PackageCategory.Desktop => [],
             PackageCategory.Applications => [],
@@ -61,7 +95,41 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
             PackageCategory.Communication => [],
             PackageCategory.Games => [],
             PackageCategory.MultiMedia => [],
-            PackageCategory.Editors => [],
+            PackageCategory.Editors =>
+            [
+                new Package()
+                {
+                    Name = "Gnome Builder",
+                    DesktopEnvironment = DesktopEnvironment.Gnome,
+                    Repositories = new Dictionary<Repository, List<string>>()
+                    {
+                        { Repository.Arch, ["gnome-builder"] },
+                        { Repository.Debian, ["gnome-builder"] },
+                        { Repository.Fedora, ["gnome-builder"] },
+                        { Repository.Ubuntu, ["gnome-builder"] },
+                    },
+                    Flatpak = new Flatpak("org.gnome.Builder", [FlatpakRemote.FlatHub]),
+                    Snap = null,
+                    PreInstall = null,
+                    PostInstall = null,
+                },
+                new Package()
+                {
+                    Name = "VS Code",
+                    DesktopEnvironment = null,
+                    Repositories = new Dictionary<Repository, List<string>>()
+                    {
+                        { Repository.Arch, ["code"] },
+                        { Repository.Debian, ["code"] },
+                        { Repository.Fedora, ["code"] },
+                        { Repository.RedHat, ["code"] },
+                    },
+                    Flatpak = new Flatpak("com.visualstudio.code", [FlatpakRemote.FlatHub]),
+                    Snap = new Snap("code", true, true),
+                    PreInstall = null,
+                    PostInstall = null,
+                },
+            ],
             PackageCategory.Software => [],
             PackageCategory.Utilities => [],
             PackageCategory.Back => [],
