@@ -4,4 +4,5 @@ public enum FlatpakRemote
 {
     FlatHub,
     Fedora,
+    None,
 }

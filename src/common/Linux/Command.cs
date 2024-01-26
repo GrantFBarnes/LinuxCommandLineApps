@@ -119,8 +119,7 @@ public sealed class Command
         using (var sr = outProcess.StandardOutput)
         using (var sw = inProcess.StandardInput)
         {
-            string line;
-            while ((line = sr.ReadLine()) != null)
+            while (sr.ReadLine() is { } line)
             {
                 sw.WriteLine(line);
             }

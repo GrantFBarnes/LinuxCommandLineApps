@@ -20,10 +20,9 @@ internal sealed class ChoosePackageMenu
 
     public void Run()
     {
-        Package selectedPackage;
-        do
+        while (true)
         {
-            selectedPackage = AnsiConsole.Prompt(
+            var selectedPackage = AnsiConsole.Prompt(
                 new SelectionPrompt<Package>()
                     .Title("Choose a Package")
                     .PageSize(15)
@@ -31,11 +30,13 @@ internal sealed class ChoosePackageMenu
                     .UseConverter(GetPackageDisplay)
             );
 
-            if (selectedPackage.Name != "Back")
+            if (selectedPackage.Name == "Back")
             {
-                new ChooseInstallMethod(_distribution, selectedPackage).Run();
+                break;
             }
-        } while (selectedPackage.Name != "Back");
+
+            new ChooseInstallMethod(_distribution, selectedPackage).Run();
+        }
     }
 
     private string GetPackageDisplay(Package package)

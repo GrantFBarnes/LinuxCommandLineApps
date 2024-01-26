@@ -48,7 +48,7 @@ public sealed class Snap
         if (distribution.InstalledSnaps.Contains(Name)) return;
         distribution.InstalledSnaps.Add(Name);
 
-        distribution.InstallPackage("snapd");
+        distribution.Install("snapd");
         Setup(distribution);
 
         var installCommand = new StringBuilder();

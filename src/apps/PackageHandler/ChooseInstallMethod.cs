@@ -12,17 +12,48 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
 
     public void Run()
     {
-        InstallMethod selectedMethod;
-        do
+        while (true)
         {
-            selectedMethod = AnsiConsole.Prompt(
+            var selectedMethod = AnsiConsole.Prompt(
                 new SelectionPrompt<InstallMethod>()
                     .Title("Choose an Install Method")
                     .PageSize(15)
                     .AddChoices(_installMethodOptions)
                     .UseConverter(GetInstallMethodDisplay)
             );
-        } while (selectedMethod != InstallMethod.None);
+
+            if (selectedMethod == InstallMethod.None)
+            {
+                break;
+            }
+
+            if (selectedMethod == InstallMethod.Repository)
+            {
+                distribution.InstallPackage(package);
+            }
+            else
+            {
+                distribution.UnInstallPackage(package);
+            }
+
+            if (selectedMethod == InstallMethod.Flatpak)
+            {
+                new ChooseFlatpakRemote(distribution, package.Flatpak).Run();
+            }
+            else
+            {
+                package.Flatpak?.UnInstall(distribution);
+            }
+
+            if (selectedMethod == InstallMethod.Snap)
+            {
+                package.Snap?.Install(distribution);
+            }
+            else
+            {
+                package.Snap?.UnInstall(distribution);
+            }
+        }
     }
 
     private string GetInstallMethodDisplay(InstallMethod method)

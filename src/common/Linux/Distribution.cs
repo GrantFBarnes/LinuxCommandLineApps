@@ -184,12 +184,11 @@ public sealed class Distribution
                 switch (_repository)
                 {
                     case Repository.Fedora:
-                        InstallPackage(
-                            "https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-39.noarch.rpm");
+                        Install("https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-39.noarch.rpm");
                         break;
                     case Repository.RedHat:
-                        InstallPackage("https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm");
-                        InstallPackage("https://download1.rpmfusion.org/free/el/rpmfusion-free-release-9.noarch.rpm");
+                        Install("https://dl.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm");
+                        Install("https://download1.rpmfusion.org/free/el/rpmfusion-free-release-9.noarch.rpm");
                         new Command("sudo dnf config-manager --set-enabled crb").Run();
                         break;
                 }
@@ -199,11 +198,11 @@ public sealed class Distribution
                     switch (_repository)
                     {
                         case Repository.Fedora:
-                            InstallPackage(
+                            Install(
                                 "https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-39.noarch.rpm");
                             break;
                         case Repository.RedHat:
-                            InstallPackage(
+                            Install(
                                 "https://download1.rpmfusion.org/nonfree/el/rpmfusion-nonfree-release-9.noarch.rpm");
                             break;
                     }
@@ -246,7 +245,16 @@ public sealed class Distribution
         }
     }
 
-    public void InstallPackage(string package)
+    public void InstallPackage(Package package)
+    {
+        if (!package.Repositories.TryGetValue(_repository, out var packageList)) return;
+        foreach (var pkg in packageList)
+        {
+            Install(pkg);
+        }
+    }
+
+    internal void Install(string package)
     {
         if (_installedPackages.Contains(package)) return;
         _installedPackages.Add(package);
@@ -268,7 +276,16 @@ public sealed class Distribution
         }
     }
 
-    public void UnInstallPackage(string package)
+    public void UnInstallPackage(Package package)
+    {
+        if (!package.Repositories.TryGetValue(_repository, out var packageList)) return;
+        foreach (var pkg in packageList)
+        {
+            UnInstall(pkg);
+        }
+    }
+
+    private void UnInstall(string package)
     {
         if (!_installedPackages.Contains(package)) return;
         _installedPackages.Remove(package);

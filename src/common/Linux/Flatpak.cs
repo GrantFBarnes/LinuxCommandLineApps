@@ -6,8 +6,8 @@ namespace Linux;
 
 public sealed class Flatpak
 {
-    public string Name = string.Empty;
-    public List<FlatpakRemote> Remotes = [];
+    public readonly string Name = string.Empty;
+    public readonly List<FlatpakRemote> Remotes = [];
 
     public static List<string> GetInstalled()
     {
@@ -60,10 +60,10 @@ public sealed class Flatpak
 
         if (!Remotes.Contains(remote)) return;
 
-        distribution.InstallPackage("flatpak");
+        distribution.Install("flatpak");
         Setup(distribution);
 
-        new Command($"flatpak install {remote} {Name} -y").Run();
+        new Command($"flatpak install {remote.ToString().ToLower()} {Name} -y").Run();
     }
 
     public void UnInstall(Distribution distribution)

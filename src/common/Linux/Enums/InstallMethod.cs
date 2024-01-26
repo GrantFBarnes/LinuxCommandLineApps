@@ -5,5 +5,6 @@ public enum InstallMethod
     Repository,
     Flatpak,
     Snap,
+    Uninstall,
     None,
 }

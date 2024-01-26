@@ -12,10 +12,9 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
 {
     public void Run()
     {
-        PackageCategory selectedCategory;
-        do
+        while (true)
         {
-            selectedCategory = AnsiConsole.Prompt(
+            var selectedCategory = AnsiConsole.Prompt(
                 new SelectionPrompt<PackageCategory>()
                     .Title("Choose a Package Category")
                     .PageSize(15)
@@ -23,11 +22,13 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     .UseConverter(x => x.ToString())
             );
 
-            if (selectedCategory != PackageCategory.Back)
+            if (selectedCategory == PackageCategory.Back)
             {
-                new ChoosePackageMenu(distribution, GetPackages(selectedCategory)).Run();
+                break;
             }
-        } while (selectedCategory != PackageCategory.Back);
+
+            new ChoosePackageMenu(distribution, GetPackages(selectedCategory)).Run();
+        }
     }
 
     private static List<Package> GetPackages(PackageCategory category)
