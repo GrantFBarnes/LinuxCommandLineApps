@@ -132,8 +132,16 @@ public sealed class Distribution
         PackageManager.Apt => "dpkg",
         PackageManager.Dnf => "rpm",
         PackageManager.Pacman => "pacman",
-        _ => throw new NotImplementedException(),
+        PackageManager.RpmOsTree => "rpm",
+        _ => throw new ArgumentOutOfRangeException()
     };
+
+    public bool IsPackageAvailable(Package package)
+    {
+        return package.Repositories.ContainsKey(_repository)
+               || package.Flatpak != null
+               || package.Snap != null;
+    }
 
     public InstallMethod GetPackageInstallMethod(Package package)
     {

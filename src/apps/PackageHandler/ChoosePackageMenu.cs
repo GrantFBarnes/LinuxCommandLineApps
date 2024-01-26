@@ -1,6 +1,7 @@
 using Linux;
 using Spectre.Console;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Linux.Enums;
 
@@ -11,10 +12,10 @@ internal sealed class ChoosePackageMenu
     private readonly Distribution _distribution;
     private readonly List<Package> _packages;
 
-    public ChoosePackageMenu(Distribution distribution, List<Package> packages)
+    public ChoosePackageMenu(Distribution distribution, IEnumerable<Package> packages)
     {
         _distribution = distribution;
-        _packages = packages;
+        _packages = packages.Where(distribution.IsPackageAvailable).ToList();
         _packages.Add(new Package { Name = "Back" });
     }
 
@@ -41,6 +42,8 @@ internal sealed class ChoosePackageMenu
 
     private string GetPackageDisplay(Package package)
     {
+        if (package.Name == "Back") return "Back";
+
         var display = new StringBuilder();
         display.Append(package.Name);
 
@@ -54,6 +57,9 @@ internal sealed class ChoosePackageMenu
                 break;
             case InstallMethod.Snap:
                 display.Append(" [purple](snap installed)[/]");
+                break;
+            default:
+                display.Append(" [red](uninstalled)[/]");
                 break;
         }
 

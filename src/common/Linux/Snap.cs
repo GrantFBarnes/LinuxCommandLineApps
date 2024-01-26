@@ -5,7 +5,7 @@ using System.Text;
 
 namespace Linux;
 
-public sealed class Snap(string name, bool isOfficial, bool isClassic, string? channel = null)
+public sealed class Snap(string name, bool isOfficial = false, bool isClassic = false, string? channel = null)
 {
     public readonly string Name = name;
     public readonly bool IsOfficial = isOfficial;
