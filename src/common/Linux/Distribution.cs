@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Linux.Enums;
 using Spectre.Console;
 
@@ -11,11 +12,11 @@ public sealed class Distribution
 {
     internal readonly PackageManager PackageManager;
     private readonly Repository _repository;
-    private readonly List<string> _installedPackages;
-    internal readonly List<string> InstalledFlatpaks;
-    internal readonly List<string> InstalledSnaps;
+    private List<string> _installedPackages = [];
+    internal List<string> InstalledFlatpaks = [];
+    internal List<string> InstalledSnaps = [];
 
-    public Distribution()
+    public Distribution(bool waitForPackages = false)
     {
         var osRelease = File.ReadAllText("/etc/os-release");
         switch (osRelease)
@@ -56,6 +57,18 @@ public sealed class Distribution
                 throw new Exception("distribution not found");
         }
 
+        if (waitForPackages)
+        {
+            GetAllInstalled();
+        }
+        else
+        {
+            Task.Run(GetAllInstalled);
+        }
+    }
+
+    private Task GetAllInstalled()
+    {
         _installedPackages = GetInstalled();
         InstalledFlatpaks = [];
         InstalledSnaps = [];
@@ -71,6 +84,8 @@ public sealed class Distribution
         {
             InstalledSnaps = Snap.GetInstalled();
         }
+
+        return Task.CompletedTask;
     }
 
     private List<string> GetInstalled()

@@ -192,7 +192,7 @@ static string GetUptime()
 static string GetPackages()
 {
     var result = new List<string>();
-    var distribution = new Distribution();
+    var distribution = new Distribution(true);
     var count = distribution.GetPackageCount();
     if (count > 0) result.Add($"{count} ({distribution.GetPackageType()})");
     count = distribution.GetFlatpakCount();
