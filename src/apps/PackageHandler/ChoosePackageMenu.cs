@@ -47,13 +47,13 @@ internal sealed class ChoosePackageMenu
         switch (_distribution.GetPackageInstallMethod(package))
         {
             case InstallMethod.Repository:
-                display.Append(" [green](repository)[/]");
+                display.Append(" [green](repository installed)[/]");
                 break;
             case InstallMethod.Flatpak:
-                display.Append(" [blue](flatpak)[/]");
+                display.Append(" [blue](flatpak installed)[/]");
                 break;
             case InstallMethod.Snap:
-                display.Append(" [purple](snap)[/]");
+                display.Append(" [purple](snap installed)[/]");
                 break;
         }
 
