@@ -46,6 +46,8 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
                 case InstallMethod.Snap:
                     package.Snap?.Install(distribution);
                     break;
+                case InstallMethod.Uninstall:
+                    break;
                 default:
                     throw new Exception("method not supported");
             }

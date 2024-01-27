@@ -167,7 +167,9 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         {
                             var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
                                                 throw new Exception("HOME could not be determined");
-                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".go")}").Run();
+                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".go")}")
+                                .HideOutput(true)
+                                .Run();
                         }
                     },
                     PostInstall = (distribution, method) =>
@@ -232,7 +234,9 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         {
                             var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
                                                 throw new Exception("HOME could not be determined");
-                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".config/nvim")}").Run();
+                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".config/nvim")}")
+                                .HideOutput(true)
+                                .Run();
                         }
                     },
                     PostInstall = (distribution, method) =>
@@ -434,6 +438,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                                                 throw new Exception("HOME could not be determined");
                             new Command(
                                     $"sudo rm -r {Path.Combine(homeDirectory, ".vim")} {Path.Combine(homeDirectory, ".viminfo")} {Path.Combine(homeDirectory, ".vimrc")}")
+                                .HideOutput(true)
                                 .Run();
                         }
                     },
@@ -444,7 +449,10 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
                                                 throw new Exception("HOME could not be determined");
                             var bashrc = Path.Combine(homeDirectory, ".bashrc");
-                            File.AppendAllText(bashrc, "export EDITOR=\"/usr/bin/vim\"\n");
+                            if (!File.Exists(bashrc) || !File.ReadAllText(bashrc).Contains("export EDITOR"))
+                            {
+                                File.AppendAllText(bashrc, "export EDITOR=\"/usr/bin/vim\"\n");
+                            }
 
                             var configFile = Path.Combine(homeDirectory, ".vimrc");
                             File.WriteAllText(configFile, """
@@ -1531,6 +1539,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                                                 throw new Exception("HOME could not be determined");
                             new Command(
                                     $"sudo rm -r {Path.Combine(homeDirectory, ".vscode")} {Path.Combine(homeDirectory, ".config/Code")}")
+                                .HideOutput(true)
                                 .Run();
                         }
 

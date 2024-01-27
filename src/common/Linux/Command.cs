@@ -68,6 +68,7 @@ public sealed class Command
         if (_hideOutput)
         {
             startInfo.RedirectStandardOutput = true;
+            startInfo.RedirectStandardError = true;
         }
 
         var process = new Process()
@@ -92,6 +93,7 @@ public sealed class Command
                 FileName = _fileName,
                 Arguments = _arguments,
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
             }
         };
 
@@ -106,6 +108,7 @@ public sealed class Command
         if (_hideOutput)
         {
             inStartInfo.RedirectStandardOutput = true;
+            inStartInfo.RedirectStandardError = true;
         }
 
         var inProcess = new Process()
@@ -139,6 +142,7 @@ public sealed class Command
             FileName = _fileName,
             Arguments = _arguments,
             RedirectStandardOutput = true,
+            RedirectStandardError = true,
         };
 
         if (!string.IsNullOrEmpty(_workingDirectory))
@@ -167,6 +171,7 @@ public sealed class Command
                 FileName = "command",
                 Arguments = $"-v {_fileName}",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
             }
         };
 
