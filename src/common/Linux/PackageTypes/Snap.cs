@@ -1,9 +1,9 @@
-using Linux.Enums;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using Linux.Enums;
 
-namespace Linux;
+namespace Linux.PackageTypes;
 
 public sealed class Snap(string name, bool isOfficial = false, bool isClassic = false, string? channel = null)
 {

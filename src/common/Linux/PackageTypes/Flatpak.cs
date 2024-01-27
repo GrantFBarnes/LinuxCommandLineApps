@@ -1,8 +1,8 @@
-using Linux.Enums;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using Linux.Enums;
 
-namespace Linux;
+namespace Linux.PackageTypes;
 
 public sealed class Flatpak(string name, List<FlatpakRemote> remotes)
 {

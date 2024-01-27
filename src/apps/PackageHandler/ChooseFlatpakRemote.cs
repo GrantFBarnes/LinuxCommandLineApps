@@ -1,4 +1,5 @@
 using Linux.Enums;
+using Linux.PackageTypes;
 using Linux;
 using Spectre.Console;
 using System.Collections.Generic;

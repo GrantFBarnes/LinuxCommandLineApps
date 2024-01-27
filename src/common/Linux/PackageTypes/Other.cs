@@ -1,9 +1,9 @@
-using Linux.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System;
+using Linux.Enums;
 
-namespace Linux;
+namespace Linux.PackageTypes;
 
 public sealed class Other(OtherPackage package)
 {

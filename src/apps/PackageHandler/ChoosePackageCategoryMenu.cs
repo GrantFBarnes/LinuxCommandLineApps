@@ -1,11 +1,12 @@
 using Linux.Enums;
+using Linux.PackageTypes;
 using Linux;
 using PackageHandler.Enums;
 using Spectre.Console;
 using System.Collections.Generic;
-using System;
 using System.IO;
 using System.Linq;
+using System;
 
 namespace PackageHandler;
 

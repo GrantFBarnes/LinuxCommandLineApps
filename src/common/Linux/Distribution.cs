@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Linux.Enums;
+using Linux.PackageTypes;
 using Spectre.Console;
 
 namespace Linux;

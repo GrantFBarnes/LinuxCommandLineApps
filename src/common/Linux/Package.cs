@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Linux.Enums;
+using Linux.PackageTypes;
 
 namespace Linux;
 
