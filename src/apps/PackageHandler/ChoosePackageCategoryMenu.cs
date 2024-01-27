@@ -1550,15 +1550,20 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     {
                         if (method != InstallMethod.Repository)
                         {
-                            if (distribution.PackageManager == PackageManager.Apt)
+                            switch (distribution.PackageManager)
                             {
-                                new Command("sudo rm /etc/apt/sources.list.d/vscode.list").Run();
-                            }
-
-                            if (distribution.PackageManager == PackageManager.Apt)
-                            {
-                                new Command("sudo dnf config-manager --set-disabled code").Run();
-                                new Command("sudo rm /etc/yum.repos.d/vscode.repo").Run();
+                                case PackageManager.Apt:
+                                    new Command("sudo rm /etc/apt/sources.list.d/vscode.list").Run();
+                                    break;
+                                case PackageManager.Dnf:
+                                    new Command("sudo dnf config-manager --set-disabled code").Run();
+                                    new Command("sudo rm /etc/yum.repos.d/vscode.repo").Run();
+                                    break;
+                                case PackageManager.Pacman:
+                                case PackageManager.RpmOsTree:
+                                    break;
+                                default:
+                                    throw new Exception("package manager not handled yet for vscode preinstall");
                             }
                         }
 
@@ -1575,37 +1580,42 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
 
                         if (method == InstallMethod.Repository)
                         {
-                            if (distribution.PackageManager == PackageManager.Apt)
+                            switch (distribution.PackageManager)
                             {
-                                const string fileName = "packages.microsoft";
-                                distribution.Install("wget");
-                                distribution.Install("gpg");
-                                File.WriteAllText(
-                                    fileName,
-                                    new Command("wget -qO- https://packages.microsoft.com/keys/microsoft.asc")
-                                        .GetOutput()
-                                );
-                                new Command("gpg --dearmor packages.microsoft").Run();
-                                new Command(
-                                        "sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg")
-                                    .Run();
-                                File.Delete(fileName);
-                                File.Delete($"{fileName}.gpg");
+                                case PackageManager.Apt:
+                                    const string fileName = "packages.microsoft";
+                                    distribution.Install("wget");
+                                    distribution.Install("gpg");
+                                    File.WriteAllText(
+                                        fileName,
+                                        new Command("wget -qO- https://packages.microsoft.com/keys/microsoft.asc")
+                                            .GetOutput()
+                                    );
+                                    new Command("gpg --dearmor packages.microsoft").Run();
+                                    new Command(
+                                            "sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg")
+                                        .Run();
+                                    File.Delete(fileName);
+                                    File.Delete($"{fileName}.gpg");
 
-                                new Command(
-                                        "echo deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main")
-                                    .PipeInto("sudo tee /etc/apt/sources.list.d/vscode.list");
+                                    new Command(
+                                            "echo deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main")
+                                        .PipeInto("sudo tee /etc/apt/sources.list.d/vscode.list");
 
-                                distribution.Update();
-                            }
-
-                            if (distribution.PackageManager == PackageManager.Dnf)
-                            {
-                                new Command("sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc")
-                                    .Run();
-                                new Command(
-                                        "echo -e [code]\\nname=Visual Studio Code\\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\\nenabled=1\\ngpgcheck=1\\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc")
-                                    .PipeInto("sudo tee /etc/yum.repos.d/vscode.repo");
+                                    distribution.Update();
+                                    break;
+                                case PackageManager.Dnf:
+                                    new Command("sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc")
+                                        .Run();
+                                    new Command(
+                                            "echo -e [code]\\nname=Visual Studio Code\\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\\nenabled=1\\ngpgcheck=1\\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc")
+                                        .PipeInto("sudo tee /etc/yum.repos.d/vscode.repo");
+                                    break;
+                                case PackageManager.Pacman:
+                                case PackageManager.RpmOsTree:
+                                    break;
+                                default:
+                                    throw new Exception("package manager not handled yet for vscode preinstall");
                             }
                         }
                     },
