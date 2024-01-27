@@ -9,9 +9,9 @@ public sealed class Other(OtherPackage package)
 {
     public readonly OtherPackage Package = package;
 
-    public static List<OtherPackage> GetInstalled()
+    public static HashSet<OtherPackage> GetInstalled()
     {
-        var packages = new List<OtherPackage>();
+        var packages = new HashSet<OtherPackage>();
 
         foreach (var package in Enum.GetValues(typeof(OtherPackage)).Cast<OtherPackage>())
         {

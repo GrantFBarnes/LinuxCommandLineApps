@@ -11,9 +11,9 @@ public sealed class Snap(string name, bool isOfficial = false, bool isClassic = 
     public readonly bool IsOfficial = isOfficial;
     public readonly bool IsClassic = isClassic;
 
-    public static List<string> GetInstalled()
+    public static HashSet<string> GetInstalled()
     {
-        var packages = new List<string>();
+        var packages = new HashSet<string>();
 
         var packageList = new Command("snap list").GetOutput();
 

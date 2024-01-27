@@ -13,10 +13,10 @@ public sealed class Distribution
 {
     public readonly PackageManager PackageManager;
     public readonly Repository Repository;
-    private List<string> _installedPackages = [];
-    internal List<string> InstalledFlatpaks = [];
-    internal List<string> InstalledSnaps = [];
-    internal List<OtherPackage> InstalledOther = [];
+    private HashSet<string> _installedPackages = [];
+    internal HashSet<string> InstalledFlatpaks = [];
+    internal HashSet<string> InstalledSnaps = [];
+    internal HashSet<OtherPackage> InstalledOther = [];
 
     public Distribution(bool waitForPackages = false)
     {
@@ -93,9 +93,9 @@ public sealed class Distribution
         return Task.CompletedTask;
     }
 
-    private List<string> GetInstalled()
+    private HashSet<string> GetInstalled()
     {
-        var packages = new List<string>();
+        var packages = new HashSet<string>();
 
         var packageList = PackageManager switch
         {
