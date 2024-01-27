@@ -4,6 +4,7 @@ using PackageHandler.Enums;
 using Spectre.Console;
 using System.Collections.Generic;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace PackageHandler;
@@ -73,7 +74,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["dotnet-runtime-8.0"] },
                     },
                     Snap = new Snap("dotnet-runtime-80", true),
-                    PreInstall = (Distribution distribution, InstallMethod method) =>
+                    PreInstall = (distribution, method) =>
                     {
                         if (method == InstallMethod.Repository)
                         {
@@ -102,7 +103,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["dotnet-sdk-8.0"] },
                     },
                     Snap = new Snap("dotnet-sdk", true, true, "8.0/stable"),
-                    PreInstall = (Distribution distribution, InstallMethod method) =>
+                    PreInstall = (distribution, method) =>
                     {
                         if (method == InstallMethod.Repository)
                         {
@@ -160,6 +161,15 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["golang", "gopls"] },
                     },
                     Snap = new Snap("go", true, true),
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method == InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".go")}").Run();
+                        }
+                    },
                 },
                 new Package
                 {
@@ -195,6 +205,15 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Fedora, ["neovim"] },
                         { Repository.Ubuntu, ["neovim"] },
                     },
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method == InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".config/nvim")}").Run();
+                        }
+                    },
                 },
                 new Package
                 {
@@ -220,6 +239,16 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["nodejs", "npm"] },
                     },
                     Snap = new Snap("node", true, true, "18/stable"),
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method == InstallMethod.Repository)
+                        {
+                            if (distribution.Repository == Repository.RedHat)
+                            {
+                                new Command("sudo dnf module enable nodejs:20 -y").Run();
+                            }
+                        }
+                    },
                 },
                 new Package
                 {
@@ -294,6 +323,17 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             ["vim", "vim-airline", "vim-ale", "vim-ctrlp", "vim-gitgutter"]
                         },
                     },
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method == InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command(
+                                    $"sudo rm -r {Path.Combine(homeDirectory, ".vim")} {Path.Combine(homeDirectory, ".viminfo")} {Path.Combine(homeDirectory, ".vimrc")}")
+                                .Run();
+                        }
+                    },
                 },
             ],
             PackageCategory.Desktop =>
@@ -355,14 +395,6 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Debian, ["id3v2"] },
                         { Repository.Fedora, ["id3v2"] },
                         { Repository.Ubuntu, ["id3v2"] },
-                    },
-                },
-                new Package
-                {
-                    Name = "qtile - Window Manager",
-                    Repositories = new Dictionary<Repository, List<string>>()
-                    {
-                        { Repository.Arch, ["qtile", "alacritty", "rofi", "numlockx", "playerctl"] },
                     },
                 },
                 new Package
@@ -1239,7 +1271,25 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Fedora, ["pycharm-community"] },
                     },
                     Flatpak = new Flatpak("com.jetbrains.PyCharm-Community", [FlatpakRemote.FlatHub]),
-                    Snap = new Snap("pycharm-community", true, true)
+                    Snap = new Snap("pycharm-community", true, true),
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Repository)
+                        {
+                            if (distribution.Repository == Repository.Fedora)
+                            {
+                                new Command("sudo dnf config-manager --set-disabled phracek-PyCharm").Run();
+                            }
+                        }
+
+                        if (method == InstallMethod.Repository)
+                        {
+                            if (distribution.Repository == Repository.Fedora)
+                            {
+                                new Command("sudo dnf config-manager --set-enabled phracek-PyCharm").Run();
+                            }
+                        }
+                    },
                 },
                 new Package
                 {
@@ -1252,7 +1302,69 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.RedHat, ["code"] },
                     },
                     Flatpak = new Flatpak("com.visualstudio.code", [FlatpakRemote.FlatHub]),
-                    Snap = new Snap("code", true, true)
+                    Snap = new Snap("code", true, true),
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Repository)
+                        {
+                            if (distribution.PackageManager == PackageManager.Apt)
+                            {
+                                new Command("sudo rm /etc/apt/sources.list.d/vscode.list").Run();
+                            }
+
+                            if (distribution.PackageManager == PackageManager.Apt)
+                            {
+                                new Command("sudo dnf config-manager --set-disabled code").Run();
+                                new Command("sudo rm /etc/yum.repos.d/vscode.repo").Run();
+                            }
+                        }
+
+                        if (method == InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command(
+                                    $"sudo rm -r {Path.Combine(homeDirectory, ".vscode")} {Path.Combine(homeDirectory, ".config/Code")}")
+                                .Run();
+                        }
+
+
+                        if (method == InstallMethod.Repository)
+                        {
+                            if (distribution.PackageManager == PackageManager.Apt)
+                            {
+                                const string fileName = "packages.microsoft";
+                                distribution.Install("wget");
+                                distribution.Install("gpg");
+                                File.WriteAllText(
+                                    fileName,
+                                    new Command("wget -qO- https://packages.microsoft.com/keys/microsoft.asc")
+                                        .GetOutput()
+                                );
+                                new Command("gpg --dearmor packages.microsoft").Run();
+                                new Command(
+                                        "sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg")
+                                    .Run();
+                                File.Delete(fileName);
+                                File.Delete($"{fileName}.gpg");
+
+                                new Command(
+                                        "echo deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main")
+                                    .PipeInto("sudo tee /etc/apt/sources.list.d/vscode.list");
+
+                                distribution.Update();
+                            }
+
+                            if (distribution.PackageManager == PackageManager.Dnf)
+                            {
+                                new Command("sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc")
+                                    .Run();
+                                new Command(
+                                        "echo -e [code]\\nname=Visual Studio Code\\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\\nenabled=1\\ngpgcheck=1\\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc")
+                                    .PipeInto("sudo tee /etc/yum.repos.d/vscode.repo");
+                            }
+                        }
+                    },
                 },
             ],
             PackageCategory.Software =>

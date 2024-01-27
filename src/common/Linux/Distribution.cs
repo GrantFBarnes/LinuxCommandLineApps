@@ -10,7 +10,7 @@ namespace Linux;
 
 public sealed class Distribution
 {
-    internal readonly PackageManager PackageManager;
+    public readonly PackageManager PackageManager;
     public readonly Repository Repository;
     private List<string> _installedPackages = [];
     internal List<string> InstalledFlatpaks = [];
@@ -323,7 +323,7 @@ public sealed class Distribution
                 new Command($"sudo dnf remove {package} -y").Run();
                 break;
             case PackageManager.Pacman:
-                new Command($"sudo pacman -Rsun {package} --noconfirm").Run();
+                new Command($"sudo pacman -Runs {package} --noconfirm").Run();
                 break;
             case PackageManager.RpmOsTree:
                 new Command($"sudo rpm-ostree uninstall {package} -y").Run();
