@@ -6,7 +6,7 @@ using System;
 
 namespace PackageHandler;
 
-internal sealed class ChooseInstallMethod(Distribution distribution, Package package)
+internal sealed class ChooseInstallMethodMenu(Distribution distribution, Package package)
 {
     private InstallMethod _installedAsMethod = distribution.GetPackageInstallMethod(package);
     private readonly List<InstallMethod> _installMethodOptions = distribution.GetPackageInstallMethodOptions(package);
@@ -42,7 +42,7 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
                     distribution.InstallPackage(package);
                     break;
                 case InstallMethod.Flatpak:
-                    new ChooseFlatpakRemote(distribution, package.Flatpak).Run();
+                    new ChooseFlatpakRemoteMenu(distribution, package.Flatpak).Run();
                     break;
                 case InstallMethod.Snap:
                     package.Snap?.Install(distribution);

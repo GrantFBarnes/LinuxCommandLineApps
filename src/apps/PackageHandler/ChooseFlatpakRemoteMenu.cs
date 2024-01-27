@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace PackageHandler;
 
-internal sealed class ChooseFlatpakRemote(Distribution distribution, Flatpak flatpak)
+internal sealed class ChooseFlatpakRemoteMenu(Distribution distribution, Flatpak flatpak)
 {
     private readonly List<FlatpakRemote> _remotes = flatpak.Remotes;
 

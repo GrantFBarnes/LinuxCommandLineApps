@@ -36,7 +36,7 @@ internal sealed class ChoosePackageMenu
                 break;
             }
 
-            new ChooseInstallMethod(_distribution, selectedPackage).Run();
+            new ChooseInstallMethodMenu(_distribution, selectedPackage).Run();
         }
     }
 
