@@ -32,6 +32,7 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
             if (selectedMethod != InstallMethod.Repository) distribution.UnInstallPackage(package);
             if (selectedMethod != InstallMethod.Flatpak) package.Flatpak?.UnInstall(distribution);
             if (selectedMethod != InstallMethod.Snap) package.Snap?.UnInstall(distribution);
+            if (selectedMethod != InstallMethod.Other) package.Other?.UnInstall(distribution);
 
             package.PreInstall?.Invoke(distribution, selectedMethod);
 
@@ -45,6 +46,9 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
                     break;
                 case InstallMethod.Snap:
                     package.Snap?.Install(distribution);
+                    break;
+                case InstallMethod.Other:
+                    package.Other?.Install(distribution);
                     break;
                 case InstallMethod.Uninstall:
                     break;
@@ -78,10 +82,13 @@ internal sealed class ChooseInstallMethod(Distribution distribution, Package pac
 
                     if (package.Snap.IsClassic)
                     {
-                        display += " [darkgoldenrod](classic)[/]";
+                        display += " (classic)";
                     }
                 }
 
+                break;
+            case InstallMethod.Other:
+                display = "[darkgoldenrod]Other[/]";
                 break;
             case InstallMethod.Uninstall:
                 display = "[red]Uninstall[/]";

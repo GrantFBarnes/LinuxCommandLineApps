@@ -199,5 +199,7 @@ static string GetPackages()
     if (count > 0) result.Add($"{count} (flatpak)");
     count = distribution.GetSnapCount();
     if (count > 0) result.Add($"{count} (snap)");
+    count = distribution.GetOtherCount();
+    if (count > 0) result.Add($"{count} (other)");
     return string.Join(", ", result);
 }

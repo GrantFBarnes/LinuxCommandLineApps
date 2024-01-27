@@ -58,6 +58,9 @@ internal sealed class ChoosePackageMenu
             case InstallMethod.Snap:
                 display.Append(" [purple](snap installed)[/]");
                 break;
+            case InstallMethod.Other:
+                display.Append(" [darkgoldenrod](other installed)[/]");
+                break;
             default:
                 display.Append(" [red](uninstalled)[/]");
                 break;

@@ -15,6 +15,7 @@ public sealed class Distribution
     private List<string> _installedPackages = [];
     internal List<string> InstalledFlatpaks = [];
     internal List<string> InstalledSnaps = [];
+    internal List<OtherPackage> InstalledOther = [];
 
     public Distribution(bool waitForPackages = false)
     {
@@ -72,6 +73,7 @@ public sealed class Distribution
         _installedPackages = GetInstalled();
         InstalledFlatpaks = [];
         InstalledSnaps = [];
+        InstalledOther = [];
 
         var flatpakCommand = new Command("flatpak");
         if (flatpakCommand.Exists())
@@ -84,6 +86,8 @@ public sealed class Distribution
         {
             InstalledSnaps = Snap.GetInstalled();
         }
+
+        InstalledOther = Other.GetInstalled();
 
         return Task.CompletedTask;
     }
@@ -127,6 +131,8 @@ public sealed class Distribution
 
     public int GetSnapCount() => InstalledSnaps.Count;
 
+    public int GetOtherCount() => InstalledOther.Count;
+
     public string GetPackageType() => PackageManager switch
     {
         PackageManager.Apt => "dpkg",
@@ -140,7 +146,8 @@ public sealed class Distribution
     {
         return package.Repositories.ContainsKey(Repository)
                || package.Flatpak != null
-               || package.Snap != null;
+               || package.Snap != null
+               || package.Other != null;
     }
 
     public InstallMethod GetPackageInstallMethod(Package package)
@@ -163,6 +170,11 @@ public sealed class Distribution
             return InstallMethod.Flatpak;
         }
 
+        if (package.Other != null && InstalledOther.Contains(package.Other.Package))
+        {
+            return InstallMethod.Other;
+        }
+
         return InstallMethod.None;
     }
 
@@ -183,6 +195,11 @@ public sealed class Distribution
         if (package.Snap != null)
         {
             options.Add(InstallMethod.Snap);
+        }
+
+        if (package.Other != null)
+        {
+            options.Add(InstallMethod.Other);
         }
 
         options.Add(InstallMethod.Uninstall);
@@ -267,6 +284,8 @@ public sealed class Distribution
         {
             Snap.Update();
         }
+
+        Other.Update();
     }
 
     public void InstallPackage(Package package)

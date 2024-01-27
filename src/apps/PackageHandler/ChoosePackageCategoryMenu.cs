@@ -161,7 +161,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Ubuntu, ["golang", "gopls"] },
                     },
                     Snap = new Snap("go", true, true),
-                    PreInstall = (distribution, method) =>
+                    PreInstall = (_, method) =>
                     {
                         if (method == InstallMethod.Uninstall)
                         {
@@ -228,7 +228,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Fedora, ["neovim"] },
                         { Repository.Ubuntu, ["neovim"] },
                     },
-                    PreInstall = (distribution, method) =>
+                    PreInstall = (_, method) =>
                     {
                         if (method == InstallMethod.Uninstall)
                         {
@@ -373,6 +373,34 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.RedHat, ["rust", "rustfmt", "cargo"] },
                         { Repository.Ubuntu, ["rustc", "rustfmt", "cargo"] },
                     },
+                    Other = new Other(OtherPackage.Rust),
+                    PreInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Other)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command($"sudo rm -r {Path.Combine(homeDirectory, ".cargo/bin/rustup")}")
+                                .HideOutput(true)
+                                .Run();
+                        }
+
+                        if (method == InstallMethod.Other)
+                        {
+                            distribution.Install("curl");
+                        }
+                    },
+                    PostInstall = (_, method) =>
+                    {
+                        if (method == InstallMethod.Other)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command(
+                                    $"{Path.Combine(homeDirectory, ".cargo/bin/rustup")} component add rust-analyzer")
+                                .Run();
+                        }
+                    },
                 },
                 new Package
                 {
@@ -430,7 +458,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             ["vim", "vim-airline", "vim-ale", "vim-ctrlp", "vim-gitgutter"]
                         },
                     },
-                    PreInstall = (distribution, method) =>
+                    PreInstall = (_, method) =>
                     {
                         if (method == InstallMethod.Uninstall)
                         {
@@ -1372,7 +1400,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                     },
                     Flatpak = new Flatpak("com.jetbrains.IntelliJ-IDEA-Community", [FlatpakRemote.FlatHub]),
                     Snap = new Snap("intellij-idea-community", true, true),
-                    PostInstall = (distribution, method) =>
+                    PostInstall = (_, method) =>
                     {
                         if (method != InstallMethod.Uninstall)
                         {
@@ -1494,7 +1522,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             }
                         }
                     },
-                    PostInstall = (distribution, method) =>
+                    PostInstall = (_, method) =>
                     {
                         if (method != InstallMethod.Uninstall)
                         {
@@ -1580,7 +1608,7 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             }
                         }
                     },
-                    PostInstall = (distribution, method) =>
+                    PostInstall = (_, method) =>
                     {
                         if (method != InstallMethod.Uninstall)
                         {
