@@ -8,16 +8,19 @@ using System.Text;
 using Linux;
 
 const string unknown = "(Unknown)";
+var distribution = new Distribution(true);
 
 Console.WriteLine($"    User: {GetUser()}");
 Console.WriteLine($"Hostname: {GetHostname()}");
 Console.WriteLine($"      OS: {GetOs()}");
+var de = GetDesktopEnvironment(distribution);
+if (!string.IsNullOrEmpty(de)) Console.WriteLine($"      DE: {de}");
 Console.WriteLine($"  Kernel: {GetKernel()}");
 Console.WriteLine($"     CPU: {GetCpu()}");
 Console.WriteLine($"   Speed: {GetSpeed()}");
 Console.WriteLine($"  Memory: {GetMemory()}");
 Console.WriteLine($"  Uptime: {GetUptime()}");
-Console.WriteLine($"Packages: {GetPackages()}");
+Console.WriteLine($"Packages: {GetPackages(distribution)}");
 
 return;
 
@@ -58,6 +61,17 @@ static string GetOs()
     }
 
     return unknown;
+}
+
+static string GetDesktopEnvironment(Distribution distro)
+{
+    var result = new List<string>();
+    foreach (var de in distro.InstalledDesktopEnvironments)
+    {
+        result.Add(de.ToString());
+    }
+
+    return string.Join(", ", result);
 }
 
 static string GetKernel()
@@ -189,17 +203,16 @@ static string GetUptime()
     return new Command("uptime -p").GetOutput().Trim();
 }
 
-static string GetPackages()
+string GetPackages(Distribution distro)
 {
     var result = new List<string>();
-    var distribution = new Distribution(true);
-    var count = distribution.GetPackageCount();
-    if (count > 0) result.Add($"{count} ({distribution.GetPackageType()})");
-    count = distribution.GetFlatpakCount();
+    var count = distro.GetPackageCount();
+    if (count > 0) result.Add($"{count} ({distro.GetPackageType()})");
+    count = distro.GetFlatpakCount();
     if (count > 0) result.Add($"{count} (flatpak)");
-    count = distribution.GetSnapCount();
+    count = distro.GetSnapCount();
     if (count > 0) result.Add($"{count} (snap)");
-    count = distribution.GetOtherCount();
+    count = distro.GetOtherCount();
     if (count > 0) result.Add($"{count} (other)");
     return string.Join(", ", result);
 }

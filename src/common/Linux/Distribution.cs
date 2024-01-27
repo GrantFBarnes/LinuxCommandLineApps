@@ -13,6 +13,7 @@ public sealed class Distribution
 {
     public readonly PackageManager PackageManager;
     public readonly Repository Repository;
+    public HashSet<DesktopEnvironment> InstalledDesktopEnvironments = [];
     private HashSet<string> _installedPackages = [];
     internal HashSet<string> InstalledFlatpaks = [];
     internal HashSet<string> InstalledSnaps = [];
@@ -71,6 +72,7 @@ public sealed class Distribution
 
     private Task GetAllInstalled()
     {
+        InstalledDesktopEnvironments = GetInstalledDesktopEnvironments();
         _installedPackages = GetInstalled();
         InstalledFlatpaks = [];
         InstalledSnaps = [];
@@ -91,6 +93,36 @@ public sealed class Distribution
         InstalledOther = Other.GetInstalled();
 
         return Task.CompletedTask;
+    }
+
+    private HashSet<DesktopEnvironment> GetInstalledDesktopEnvironments()
+    {
+        var desktopEnvironments = new HashSet<DesktopEnvironment>();
+
+        foreach (var de in Enum.GetValues(typeof(DesktopEnvironment)).Cast<DesktopEnvironment>())
+        {
+            switch (de)
+            {
+                case DesktopEnvironment.Gnome:
+                    if (new Command("gnome-shell").Exists())
+                    {
+                        desktopEnvironments.Add(de);
+                    }
+
+                    break;
+                case DesktopEnvironment.Kde:
+                    if (new Command("plasmashell").Exists())
+                    {
+                        desktopEnvironments.Add(de);
+                    }
+
+                    break;
+                default:
+                    throw new Exception("desktop environment check not defined");
+            }
+        }
+
+        return desktopEnvironments;
     }
 
     private HashSet<string> GetInstalled()
