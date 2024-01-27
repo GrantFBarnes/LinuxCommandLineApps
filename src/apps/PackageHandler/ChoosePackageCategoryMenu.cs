@@ -170,6 +170,27 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             new Command($"sudo rm -r {Path.Combine(homeDirectory, ".go")}").Run();
                         }
                     },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            new Command($"go env -w GOPATH={Path.Combine(homeDirectory, ".go")}").Run();
+                            if (method == InstallMethod.Snap || distribution.Repository == Repository.RedHat)
+                            {
+                                var bashrc = Path.Combine(homeDirectory, ".bashrc");
+                                if (!File.Exists(bashrc) ||
+                                    !File.ReadAllText(bashrc).Contains("export GOPATH"))
+                                {
+                                    File.AppendText("export GOPATH=$HOME/.go");
+                                    File.AppendText("export PATH=$PATH:$GOPATH/bin");
+                                }
+
+                                new Command("go install golang.org/x/tools/gopls@latest").Run();
+                            }
+                        }
+                    },
                 },
                 new Package
                 {
@@ -212,6 +233,81 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
                                                 throw new Exception("HOME could not be determined");
                             new Command($"sudo rm -r {Path.Combine(homeDirectory, ".config/nvim")}").Run();
+                        }
+                    },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            var configFile = Path.Combine(homeDirectory, ".config/nvim/init.vim");
+                            File.WriteAllText(configFile, """
+                                                          " neovim settings
+
+                                                          set noswapfile
+                                                          set nobackup
+                                                          set nowritebackup
+
+                                                          set updatetime=300
+                                                          set scrolloff=10
+                                                          set number
+                                                          set relativenumber
+                                                          set ignorecase smartcase
+                                                          set incsearch hlsearch
+                                                          set foldmethod=indent
+                                                          set foldlevel=99
+
+                                                          syntax on
+                                                          colorscheme desert
+                                                          filetype plugin indent on
+
+                                                          " normal mode remaps
+
+                                                          let mapleader = " "
+
+                                                          " window split
+                                                          nnoremap <Leader>vs <C-w>v
+                                                          nnoremap <Leader>hs <C-w>s
+
+                                                          " window navigation
+                                                          nnoremap <C-h> <C-w>h
+                                                          nnoremap <C-j> <C-w>j
+                                                          nnoremap <C-k> <C-w>k
+                                                          nnoremap <C-l> <C-w>l
+
+                                                          " text insert
+                                                          nnoremap <Leader>go iif err != nil {}<ESC>
+
+                                                          " file explore
+                                                          nnoremap <Leader>ex :Explore<CR>
+                                                          """);
+                            if (distribution.Repository != Repository.RedHat)
+                            {
+                                if (distribution.Repository is Repository.Arch or Repository.Fedora)
+                                {
+                                    File.AppendAllText(configFile, "nnoremap <C-n> :NERDTreeToggle<CR>");
+                                }
+
+                                File.AppendAllText(configFile, """
+                                                               " ale settings
+
+                                                               let g:ale_fix_on_save = 1
+                                                               let g:ale_completion_enabled = 1
+                                                               let g:ale_linters = { "go": ["gopls"], "rust": ["analyzer"] }
+                                                               let g:ale_fixers = { "*": ["remove_trailing_lines", "trim_whitespace"], "go": ["gofmt"], "rust": ["rustfmt"] }
+
+                                                               nnoremap K :ALEHover<CR>
+                                                               nnoremap gd :ALEGoToDefinition<CR>
+                                                               nnoremap gn :ALERename<CR>
+                                                               nnoremap gr :ALEFindReferences<CR>
+
+                                                               " insert mode remaps
+
+                                                               inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
+                                                               inoremap <silent><expr> <S-Tab> pumvisible() ? "\<C-n>" : "\<S-TAB>"
+                                                               """);
+                            }
                         }
                     },
                 },
@@ -284,6 +380,13 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.RedHat, ["snapd"] },
                         { Repository.Ubuntu, ["snapd"] },
                     },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            Snap.Setup(distribution);
+                        }
+                    },
                 },
                 new Package
                 {
@@ -332,6 +435,89 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             new Command(
                                     $"sudo rm -r {Path.Combine(homeDirectory, ".vim")} {Path.Combine(homeDirectory, ".viminfo")} {Path.Combine(homeDirectory, ".vimrc")}")
                                 .Run();
+                        }
+                    },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            var bashrc = Path.Combine(homeDirectory, ".bashrc");
+                            File.AppendAllText(bashrc, "export EDITOR=\"/usr/bin/vim\"\n");
+
+                            var configFile = Path.Combine(homeDirectory, ".vimrc");
+                            File.WriteAllText(configFile, """
+                                                          " vim settings
+
+                                                          set nocompatible
+
+                                                          set encoding=utf-8
+
+                                                          set noswapfile
+                                                          set nobackup
+                                                          set nowritebackup
+
+                                                          set mouse=a
+                                                          set updatetime=300
+                                                          set scrolloff=10
+                                                          set number
+                                                          set relativenumber
+                                                          set ignorecase smartcase
+                                                          set incsearch hlsearch
+                                                          set foldmethod=indent
+                                                          set foldlevel=99
+
+                                                          syntax on
+                                                          colorscheme desert
+                                                          filetype plugin indent on
+
+                                                          " normal mode remaps
+
+                                                          let mapleader = " "
+
+                                                          " window split
+                                                          nnoremap <Leader>vs <C-w>v
+                                                          nnoremap <Leader>hs <C-w>s
+
+                                                          " window navigation
+                                                          nnoremap <C-h> <C-w>h
+                                                          nnoremap <C-j> <C-w>j
+                                                          nnoremap <C-k> <C-w>k
+                                                          nnoremap <C-l> <C-w>l
+
+                                                          " text insert
+                                                          nnoremap <Leader>go iif err != nil {}<ESC>
+
+                                                          " file explore
+                                                          nnoremap <Leader>ex :Explore<CR>
+                                                          """);
+                            if (distribution.Repository != Repository.RedHat)
+                            {
+                                if (distribution.Repository is Repository.Arch or Repository.Fedora)
+                                {
+                                    File.AppendAllText(configFile, "nnoremap <C-n> :NERDTreeToggle<CR>");
+                                }
+
+                                File.AppendAllText(configFile, """
+                                                               " ale settings
+
+                                                               let g:ale_fix_on_save = 1
+                                                               let g:ale_completion_enabled = 1
+                                                               let g:ale_linters = { "go": ["gopls"], "rust": ["analyzer"] }
+                                                               let g:ale_fixers = { "*": ["remove_trailing_lines", "trim_whitespace"], "go": ["gofmt"], "rust": ["rustfmt"] }
+
+                                                               nnoremap K :ALEHover<CR>
+                                                               nnoremap gd :ALEGoToDefinition<CR>
+                                                               nnoremap gn :ALERename<CR>
+                                                               nnoremap gr :ALEFindReferences<CR>
+
+                                                               " insert mode remaps
+
+                                                               inoremap <silent><expr> <Tab> pumvisible() ? "\<C-n>" : "\<TAB>"
+                                                               inoremap <silent><expr> <S-Tab> pumvisible() ? "\<C-n>" : "\<S-TAB>"
+                                                               """);
+                            }
                         }
                     },
                 },
@@ -1177,7 +1363,17 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                         { Repository.Arch, ["intellij-idea-community-edition"] },
                     },
                     Flatpak = new Flatpak("com.jetbrains.IntelliJ-IDEA-Community", [FlatpakRemote.FlatHub]),
-                    Snap = new Snap("intellij-idea-community", true, true)
+                    Snap = new Snap("intellij-idea-community", true, true),
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            var configFile = Path.Combine(homeDirectory, ".ideavimrc");
+                            File.WriteAllText(configFile, "sethandler a:ide");
+                        }
+                    },
                 },
                 new Package
                 {
@@ -1290,6 +1486,16 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                             }
                         }
                     },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            var configFile = Path.Combine(homeDirectory, ".ideavimrc");
+                            File.WriteAllText(configFile, "sethandler a:ide");
+                        }
+                    },
                 },
                 new Package
                 {
@@ -1363,6 +1569,40 @@ internal sealed class ChoosePackageCategoryMenu(Distribution distribution)
                                         "echo -e [code]\\nname=Visual Studio Code\\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\\nenabled=1\\ngpgcheck=1\\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc")
                                     .PipeInto("sudo tee /etc/yum.repos.d/vscode.repo");
                             }
+                        }
+                    },
+                    PostInstall = (distribution, method) =>
+                    {
+                        if (method != InstallMethod.Uninstall)
+                        {
+                            string[] extensions = ["esbenp.prettier-vscode", "vscodevim.vim"];
+                            foreach (var extension in extensions)
+                            {
+                                new Command($"code --install-extension {extension}").Run();
+                            }
+
+                            var homeDirectory = Environment.GetEnvironmentVariable("HOME") ??
+                                                throw new Exception("HOME could not be determined");
+                            var configFile = Path.Combine(homeDirectory, ".config/Code/User/settings.json");
+                            File.WriteAllText(configFile, """
+                                                          {
+                                                            "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[html]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[javascript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[json]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[jsonc]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[scss]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+                                                            "editor.formatOnSave": true,
+                                                            "editor.rulers": [80, 160],
+                                                            "extensions.ignoreRecommendations": true,
+                                                            "git.openRepositoryInParentFolders": "always",
+                                                            "telemetry.telemetryLevel": "off",
+                                                            "vim.smartRelativeLine": true,
+                                                            "vim.useCtrlKeys": false,
+                                                            "workbench.startupEditor": "none"
+                                                          }
+                                                          """);
                         }
                     },
                 },

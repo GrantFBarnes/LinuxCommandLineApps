@@ -28,7 +28,7 @@ public sealed class Snap(string name, bool isOfficial = false, bool isClassic = 
         return packages;
     }
 
-    private static void Setup(Distribution distribution)
+    public static void Setup(Distribution distribution)
     {
         if (distribution.PackageManager == PackageManager.Dnf)
         {
