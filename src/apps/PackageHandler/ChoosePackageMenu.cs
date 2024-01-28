@@ -45,7 +45,17 @@ internal sealed class ChoosePackageMenu
         if (package.Name == "Back") return "Back";
 
         var display = new StringBuilder();
-        display.Append(package.Name);
+
+        if (package.DesktopEnvironment != null &&
+            !_distribution.InstalledDesktopEnvironments.Contains((DesktopEnvironment)package.DesktopEnvironment))
+        {
+            display.Append($"[orange4_1]{package.Name}[/]");
+        }
+        else
+        {
+            display.Append(package.Name);
+        }
+
 
         switch (_distribution.GetPackageInstallMethod(package))
         {
